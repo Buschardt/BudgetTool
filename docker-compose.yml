@@ -5,6 +5,11 @@ services:
       dockerfile: ../infra/Dockerfile.api
     ports:
       - "3000:3000"
+    environment:
+      DATABASE_URL: sqlite:/data/budgettool.db?mode=rwc
+      JWT_SECRET: ${JWT_SECRET}
+    volumes:
+      - api-data:/data
     restart: unless-stopped
 
   frontend:
@@ -23,3 +28,6 @@ services:
       - api
       - frontend
     restart: unless-stopped
+
+volumes:
+  api-data:
