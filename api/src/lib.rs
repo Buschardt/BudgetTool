@@ -26,13 +26,13 @@ pub fn app(state: AppState) -> Router {
         .route("/api/login", post(auth::login))
         .route("/api/me", get(me))
         .route("/api/files", get(files::list).post(files::upload))
-        .route(
-            "/api/files/{id}",
-            get(files::get_one).delete(files::delete),
-        )
+        .route("/api/files/{id}", get(files::get_one).delete(files::delete))
         .route("/api/files/{id}/convert", post(files::convert_csv))
         .route("/api/reports/balance", get(reports::balance))
-        .route("/api/reports/incomestatement", get(reports::income_statement))
+        .route(
+            "/api/reports/incomestatement",
+            get(reports::income_statement),
+        )
         .route("/api/reports/register", get(reports::register))
         .route("/api/reports/cashflow", get(reports::cashflow))
         .with_state(state)

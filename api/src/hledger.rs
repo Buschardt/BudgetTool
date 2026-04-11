@@ -32,10 +32,7 @@ pub async fn run(args: &[&str]) -> Result<serde_json::Value, AppError> {
 pub async fn run_raw(args: &[&str]) -> Result<String, AppError> {
     info!(cmd = %format!("hledger {}", args.join(" ")), "running hledger");
 
-    let output = Command::new("hledger")
-        .args(args)
-        .output()
-        .await?;
+    let output = Command::new("hledger").args(args).output().await?;
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr).into_owned();

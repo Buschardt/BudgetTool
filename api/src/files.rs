@@ -1,5 +1,5 @@
-use axum::extract::{Multipart, Path, State};
 use axum::Json;
+use axum::extract::{Multipart, Path, State};
 use serde::Deserialize;
 use uuid::Uuid;
 
@@ -35,11 +35,7 @@ fn file_extension(filename: &str) -> Option<&str> {
     // Find the last dot that isn't the very first character
     let dot_pos = filename[1..].rfind('.')?.checked_add(1)?;
     let ext = &filename[dot_pos + 1..];
-    if ext.is_empty() {
-        None
-    } else {
-        Some(ext)
-    }
+    if ext.is_empty() { None } else { Some(ext) }
 }
 
 pub async fn upload(
@@ -304,10 +300,7 @@ mod tests {
 
     #[test]
     fn sanitize_strips_path_separators() {
-        assert_eq!(
-            sanitize_filename("../../etc/passwd"),
-            Some("passwd".into())
-        );
+        assert_eq!(sanitize_filename("../../etc/passwd"), Some("passwd".into()));
         assert_eq!(
             sanitize_filename("foo/bar/baz.journal"),
             Some("baz.journal".into())

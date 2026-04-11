@@ -1,5 +1,5 @@
-use axum::extract::{Query, State};
 use axum::Json;
+use axum::extract::{Query, State};
 use serde::Deserialize;
 use sqlx::sqlite::SqlitePool;
 
@@ -67,7 +67,11 @@ fn filter_args(query: &ReportQuery) -> Vec<String> {
 }
 
 /// Build the full args slice for hledger from a subcommand, journal paths, and filters.
-fn build_args<'a>(subcommand: &'a str, file_args: &'a [String], filter_args: &'a [String]) -> Vec<&'a str> {
+fn build_args<'a>(
+    subcommand: &'a str,
+    file_args: &'a [String],
+    filter_args: &'a [String],
+) -> Vec<&'a str> {
     let mut args = vec![subcommand];
     for s in file_args {
         args.push(s.as_str());
@@ -154,7 +158,13 @@ mod tests {
 
     #[test]
     fn filter_args_begin_end() {
-        let args = filter_args(&query(Some("2024-01-01"), Some("2024-04-01"), None, None, None));
+        let args = filter_args(&query(
+            Some("2024-01-01"),
+            Some("2024-04-01"),
+            None,
+            None,
+            None,
+        ));
         assert_eq!(args, vec!["--begin", "2024-01-01", "--end", "2024-04-01"]);
     }
 
@@ -188,10 +198,14 @@ mod tests {
         assert_eq!(
             args,
             vec![
-                "--begin", "2024-01-01",
-                "--end", "2024-12-31",
-                "--period", "quarterly",
-                "--depth", "3",
+                "--begin",
+                "2024-01-01",
+                "--end",
+                "2024-12-31",
+                "--period",
+                "quarterly",
+                "--depth",
+                "3",
                 "assets",
             ]
         );
@@ -202,6 +216,15 @@ mod tests {
         let file_args = vec!["-f".to_string(), "/data/1/a.journal".to_string()];
         let filter = vec!["--begin".to_string(), "2024-01-01".to_string()];
         let args = build_args("balance", &file_args, &filter);
-        assert_eq!(args, vec!["balance", "-f", "/data/1/a.journal", "--begin", "2024-01-01"]);
+        assert_eq!(
+            args,
+            vec![
+                "balance",
+                "-f",
+                "/data/1/a.journal",
+                "--begin",
+                "2024-01-01"
+            ]
+        );
     }
 }

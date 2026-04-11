@@ -21,3 +21,9 @@ Self-hosted personal finance tool for two users. Uploads bank transaction files 
 GitHub Actions runs on push/PR to main:
 - API: fmt, clippy, build, test
 - Frontend: lint, build
+
+**All CI pipelines must pass after every change.** Before finishing any task, ensure:
+- `cargo fmt --check` passes (run `cargo fmt` to fix formatting)
+- `cargo clippy` passes with no warnings
+- `cargo build` and `cargo test` succeed
+- Frontend lint and build succeed
