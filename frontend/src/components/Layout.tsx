@@ -1,5 +1,6 @@
 import { Outlet, NavLink } from 'react-router-dom';
 import { useAuth } from '../auth';
+import { ErrorBoundary } from './ErrorBoundary';
 import './Layout.css';
 
 const NAV_LINKS = [
@@ -38,7 +39,9 @@ export function Layout() {
         ))}
       </div>
       <main className="main">
-        <Outlet />
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
     </div>
   );

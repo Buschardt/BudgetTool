@@ -33,8 +33,11 @@ export function BalancePage() {
 
   const balances = raw ? parseBalance(raw) : [];
 
-  // For chart: top-level accounts only (no ':')
-  const topLevel = balances.filter(b => !b.account.includes(':'));
+  // For chart: top-level asset/liability accounts only
+  const topLevel = balances.filter(b =>
+    !b.account.includes(':') &&
+    (b.account.startsWith('assets') || b.account.startsWith('liabilities'))
+  );
 
   return (
     <div className="balance-page">

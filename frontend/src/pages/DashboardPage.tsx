@@ -16,7 +16,7 @@ const todayStr = toISODate(today);
 const yearAgo = toISODate(monthsAgo(12, today));
 
 const MONTHLY_PARAMS = { begin: monthStart, end: todayStr };
-const TREND_PARAMS = { begin: yearAgo, end: todayStr, period: 'monthly' };
+const TREND_PARAMS = { begin: yearAgo, end: todayStr };
 
 const PIE_COLORS = ['#646cff', '#34d399', '#f87171', '#fbbf24', '#a78bfa', '#60a5fa', '#fb923c', '#4ade80'];
 
@@ -28,7 +28,11 @@ export function DashboardPage() {
   const netWorth = useMemo(() => {
     if (!balRaw) return null;
     const rows = parseBalance(balRaw);
-    return rows.reduce((sum, r) => sum + r.amount, 0);
+    // Sum only assets and liabilities — in double-entry, summing all accounts always gives 0
+    const balanceSheetRows = rows.filter(r =>
+      r.account.startsWith('assets') || r.account.startsWith('liabilities')
+    );
+    return balanceSheetRows.reduce((sum, r) => sum + r.amount, 0);
   }, [balRaw]);
 
   const monthSummary = useMemo(() => {

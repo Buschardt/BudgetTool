@@ -26,7 +26,10 @@ export function useReport<T>(
   const run = useCallback(() => {
     setState(s => ({ ...s, loading: true, error: null }));
     fetchRef.current(params)
-      .then(data => setState({ data, loading: false, error: null }))
+      .then(data => {
+        console.log('[useReport] raw response:', data);
+        setState({ data, loading: false, error: null });
+      })
       .catch(err => setState({ data: null, loading: false, error: String(err?.message ?? err) }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paramsKey]);

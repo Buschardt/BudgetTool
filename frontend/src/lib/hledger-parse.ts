@@ -1,8 +1,5 @@
 import type {
   AccountBalance,
-  HledgerAmount,
-  HledgerMixedAmount,
-  HledgerQuantity,
   IncomeExpenseSummary,
   RegisterEntry,
 } from '../types/hledger';
@@ -11,22 +8,47 @@ import type {
 // Low-level amount helpers
 // ---------------------------------------------------------------------------
 
-function parseQuantity(q: HledgerQuantity): number {
-  return q.decimalMantissa / Math.pow(10, q.decimalPlaces);
+function parseQuantity(q: unknown): number {
+  if (q === null || q === undefined) return 0;
+  if (typeof q === 'number') return q;
+  if (typeof q === 'object') {
+    const obj = q as Record<string, unknown>;
+    const mantissa = typeof obj['decimalMantissa'] === 'number' ? obj['decimalMantissa'] : 0;
+    const places = typeof obj['decimalPlaces'] === 'number' ? obj['decimalPlaces'] : 0;
+    return mantissa / Math.pow(10, places);
+  }
+  return 0;
 }
 
-export function parseAmount(amt: HledgerAmount): number {
-  return parseQuantity(amt.aquantity);
+function safeParseAmount(amt: unknown): number {
+  if (!amt || typeof amt !== 'object') return 0;
+  const a = amt as Record<string, unknown>;
+  return parseQuantity(a['aquantity']);
 }
 
-function primaryAmount(mixed: HledgerMixedAmount): { amount: number; commodity: string } {
-  const amounts = mixed?.contents ?? [];
+function safeCommodity(amt: unknown): string {
+  if (!amt || typeof amt !== 'object') return '$';
+  const a = amt as Record<string, unknown>;
+  return typeof a['acommodity'] === 'string' ? a['acommodity'] || '$' : '$';
+}
+
+/** Extract primary { amount, commodity } from a MixedAmount.
+ *  Handles both array-form [Amount, ...] and object-form { contents: [Amount, ...] }. */
+function primaryAmount(raw: unknown): { amount: number; commodity: string } {
+  let amounts: unknown[] = [];
+  if (Array.isArray(raw)) {
+    amounts = raw;
+  } else if (raw && typeof raw === 'object') {
+    const obj = raw as Record<string, unknown>;
+    if ('contents' in obj && Array.isArray(obj['contents'])) {
+      amounts = obj['contents'];
+    }
+  }
   if (amounts.length === 0) return { amount: 0, commodity: '$' };
-  // Prefer the first non-zero amount, otherwise use the first
-  const nonZero = amounts.find(a => parseAmount(a) !== 0) ?? amounts[0];
+  const nonZero = amounts.find(a => safeParseAmount(a) !== 0) ?? amounts[0];
   return {
-    amount: parseAmount(nonZero),
-    commodity: nonZero.acommodity || '$',
+    amount: safeParseAmount(nonZero),
+    commodity: safeCommodity(nonZero),
   };
 }
 
@@ -34,40 +56,65 @@ function primaryAmount(mixed: HledgerMixedAmount): { amount: number; commodity: 
 // balance / cashflow
 // ---------------------------------------------------------------------------
 
-// hledger balance --output-format=json returns something like:
-// [["account:name", [mixedAmount], [mixedAmount]], ..., ["totals", [mixedAmount], [mixedAmount]]]
-// or a richer object depending on flags. We handle both.
+// hledger balance --output-format=json returns an array of 3-tuples:
+//   [accountName, mixedAmount, cumulativeMixedAmount]
+// The last row has an empty string "" as the account name (totals).
+//
+// With --period, it returns a compound report:
+//   [[dateRange, rows, totals], ...]   (multi-period)
+// We detect and flatten both.
 
 function parseBalanceRow(row: unknown): AccountBalance | null {
   if (!Array.isArray(row) || row.length < 2) return null;
+
+  // Detect multi-period structure: first element is a date-range array, not a string
+  // e.g. [["2026-01-01", "2026-02-01"], rows, totals]
+  if (Array.isArray(row[0])) return null;
+
   const name = typeof row[0] === 'string' ? row[0] : String(row[0]);
-  if (name === 'totals') return null; // skip totals row
-  const rawAmounts = row[1];
-  // mixedAmount may be an array of HledgerAmount, or an object with .contents
-  let amounts: HledgerAmount[] = [];
-  if (Array.isArray(rawAmounts)) {
-    amounts = rawAmounts as HledgerAmount[];
-  } else if (rawAmounts && typeof rawAmounts === 'object' && 'contents' in rawAmounts) {
-    amounts = (rawAmounts as HledgerMixedAmount).contents;
-  }
-  if (amounts.length === 0) return { account: name, amount: 0, commodity: '$' };
-  const nonZero = amounts.find(a => parseAmount(a) !== 0) ?? amounts[0];
-  return {
-    account: name,
-    amount: parseAmount(nonZero),
-    commodity: nonZero.acommodity || '$',
-  };
+  // Skip totals rows (empty string or "totals")
+  if (name === '' || name === 'totals') return null;
+
+  const { amount, commodity } = primaryAmount(row[1]);
+  return { account: name, amount, commodity };
+}
+
+function isMultiPeriod(raw: unknown[]): boolean {
+  // Multi-period: each element is [dateRange, rows, totals]
+  // where dateRange is a 2-element array of date strings
+  return raw.length > 0 && Array.isArray(raw[0]) && Array.isArray((raw[0] as unknown[])[0]);
 }
 
 export function parseBalance(raw: unknown): AccountBalance[] {
-  if (!Array.isArray(raw)) return [];
+  if (!Array.isArray(raw) || raw.length === 0) return [];
+
+  if (isMultiPeriod(raw)) {
+    // Flatten all periods into a single list (last period = most recent)
+    const lastPeriod = raw[raw.length - 1] as unknown[];
+    const rows = lastPeriod[1];
+    if (!Array.isArray(rows)) return [];
+    return rows.flatMap(row => {
+      const parsed = parseBalanceRow(row);
+      return parsed ? [parsed] : [];
+    });
+  }
+
   return raw.flatMap(row => {
     const parsed = parseBalanceRow(row);
     return parsed ? [parsed] : [];
   });
 }
 
+// hledger cashflow --output-format=json returns a compound report like incomestatement:
+// { title, subtitle, subreports: [{title, rows, totals}], totals }
 export function parseCashflow(raw: unknown): AccountBalance[] {
+  if (!raw || typeof raw !== 'object') return parseBalance(raw);
+  const obj = raw as Record<string, unknown>;
+  // Compound report with subreports
+  if ('subreports' in obj && Array.isArray(obj['subreports'])) {
+    return obj['subreports'].flatMap(section => parseSection(section));
+  }
+  // Fallback: try flat array format
   return parseBalance(raw);
 }
 
@@ -87,11 +134,8 @@ export function parseRegister(raw: unknown): RegisterEntry[] {
     const description = typeof r['description'] === 'string' ? r['description'] : '';
     const account = typeof r['account'] === 'string' ? r['account'] : '';
 
-    const amtRaw = r['amount'] as HledgerMixedAmount | undefined;
-    const runningRaw = r['runningTotal'] as HledgerMixedAmount | undefined;
-
-    const { amount, commodity } = amtRaw ? primaryAmount(amtRaw) : { amount: 0, commodity: '$' };
-    const { amount: runningTotal } = runningRaw ? primaryAmount(runningRaw) : { amount: 0 };
+    const { amount, commodity } = primaryAmount(r['amount'] as unknown);
+    const { amount: runningTotal } = primaryAmount(r['runningTotal'] as unknown);
 
     return [{ date, description, account, amount, commodity, runningTotal }];
   });
