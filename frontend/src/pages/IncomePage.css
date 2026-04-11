@@ -1,0 +1,56 @@
+.income-page h1 {
+  margin-bottom: 1rem;
+}
+
+.income-page h2 {
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.income-page-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.income-page-net {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.income-page-net-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text);
+}
+
+.income-page-net-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.income-page-tables {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 700px) {
+  .income-page-tables {
+    grid-template-columns: 1fr;
+  }
+}
+
+.income-page-chart {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}

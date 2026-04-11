@@ -1,0 +1,32 @@
+.summary-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.summary-card-title {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text);
+}
+
+.summary-card-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-h);
+  line-height: 1.2;
+}
+
+.summary-card-value--up { color: var(--success); }
+.summary-card-value--down { color: var(--danger); }
+
+.summary-card-subtitle {
+  font-size: 0.8rem;
+  color: var(--text);
+  margin-top: 0.125rem;
+}

@@ -6,6 +6,9 @@
   --nav-bg: #1a1a1a;
   --card-bg: #1a1a1a;
   --accent: #646cff;
+  --success: #34d399;
+  --danger: #f87171;
+  --radius: 8px;
 
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;

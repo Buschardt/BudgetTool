@@ -1,0 +1,79 @@
+.file-uploader {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 2.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  margin-bottom: 1.5rem;
+  user-select: none;
+}
+
+.file-uploader:hover,
+.file-uploader--dragging {
+  border-color: var(--accent);
+  background: rgba(100, 108, 255, 0.04);
+}
+
+.file-uploader--uploading,
+.file-uploader--success,
+.file-uploader--error {
+  cursor: default;
+}
+
+.file-uploader-input {
+  display: none;
+}
+
+.file-uploader-icon {
+  font-size: 2rem;
+  color: var(--text);
+  line-height: 1;
+}
+
+.file-uploader-icon--success { color: var(--success); }
+.file-uploader-icon--error   { color: var(--danger); }
+
+.file-uploader-label {
+  font-size: 0.95rem;
+  color: var(--text-h);
+}
+
+.file-uploader-label--error { color: var(--danger); }
+
+.file-uploader-hint {
+  font-size: 0.8rem;
+  color: var(--text);
+}
+
+.file-uploader-spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.file-uploader-retry {
+  margin-top: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.file-uploader-retry:hover {
+  border-color: var(--accent);
+  color: var(--text-h);
+}

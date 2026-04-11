@@ -49,6 +49,36 @@
   color: #fff;
 }
 
+.tab-bar {
+  display: flex;
+  align-items: center;
+  padding: 0 1.5rem;
+  background: var(--nav-bg);
+  border-bottom: 1px solid var(--border);
+  gap: 0;
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+
+.tab-link {
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  color: var(--text);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.tab-link:hover {
+  color: var(--text-h);
+}
+
+.tab-link--active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
 .main {
   flex: 1;
   padding: 2rem 1.5rem;

@@ -1,0 +1,22 @@
+.cashflow-page h1 {
+  margin-bottom: 1rem;
+}
+
+.cashflow-page h2 {
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.cashflow-page-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.cashflow-page-chart {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}

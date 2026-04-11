@@ -1,0 +1,22 @@
+.balance-page h1 {
+  margin-bottom: 1rem;
+}
+
+.balance-page-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.balance-page-chart {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}
+
+.balance-page-chart h2 {
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  color: var(--text);
+}

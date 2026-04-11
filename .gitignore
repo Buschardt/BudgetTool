@@ -1,5 +1,6 @@
 # Rust
 api/target/
+api/data/
 
 # Node
 frontend/node_modules/

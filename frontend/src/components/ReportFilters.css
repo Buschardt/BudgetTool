@@ -1,0 +1,42 @@
+.report-filters {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+
+.report-filters-field {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.report-filters-label {
+  font-size: 0.8rem;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.report-filters-input {
+  padding: 0.4rem 0.6rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-h);
+  font-size: 0.875rem;
+  width: 160px;
+}
+
+.report-filters-input--narrow {
+  width: 60px;
+}
+
+.report-filters-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.report-filters-input::placeholder {
+  color: #4b5563;
+}

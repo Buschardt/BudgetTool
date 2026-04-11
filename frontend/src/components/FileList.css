@@ -1,0 +1,107 @@
+.file-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.file-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  gap: 1rem;
+}
+
+.file-list-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.file-list-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.file-list-badge--journal { background: rgba(100, 108, 255, 0.2); color: #a5b4fc; }
+.file-list-badge--csv     { background: rgba(52, 211, 153, 0.2); color: #6ee7b7; }
+.file-list-badge--rules   { background: rgba(251, 191, 36, 0.2); color: #fcd34d; }
+
+.file-list-name {
+  font-size: 0.9rem;
+  color: var(--text-h);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-list-meta {
+  font-size: 0.8rem;
+  color: var(--text);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.file-list-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.file-list-convert-error {
+  font-size: 0.8rem;
+  color: var(--danger);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-list-btn {
+  padding: 0.3rem 0.65rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: none;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.file-list-btn:disabled { opacity: 0.5; cursor: default; }
+
+.file-list-btn--convert {
+  color: var(--success);
+  border-color: rgba(52, 211, 153, 0.3);
+}
+
+.file-list-btn--convert:hover:not(:disabled) {
+  border-color: var(--success);
+}
+
+.file-list-btn--delete {
+  color: var(--danger);
+  border-color: rgba(248, 113, 113, 0.3);
+}
+
+.file-list-btn--delete:hover:not(:disabled) {
+  border-color: var(--danger);
+}
+
+.file-list-empty {
+  color: var(--text);
+  text-align: center;
+  padding: 2rem;
+}
