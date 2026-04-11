@@ -19,6 +19,12 @@ pub enum AppError {
     #[error("unauthorized")]
     Unauthorized,
 
+    #[error("not found: {0}")]
+    NotFound(String),
+
+    #[error("payload too large")]
+    PayloadTooLarge,
+
     #[error("internal error: {0}")]
     Internal(String),
 }
@@ -28,6 +34,8 @@ impl IntoResponse for AppError {
         let status = match &self {
             AppError::BadRequest(_) => StatusCode::BAD_REQUEST,
             AppError::Unauthorized => StatusCode::UNAUTHORIZED,
+            AppError::NotFound(_) => StatusCode::NOT_FOUND,
+            AppError::PayloadTooLarge => StatusCode::PAYLOAD_TOO_LARGE,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         };
         let body = json!({ "ok": false, "error": self.to_string() });

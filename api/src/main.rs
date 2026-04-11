@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use budgettool_api::db;
 use budgettool_api::models::AppState;
 use clap::Parser;
@@ -33,10 +35,14 @@ async fn main() {
         Command::Serve => {
             let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
             let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
+            let data_dir = std::env::var("DATA_DIR")
+                .map(PathBuf::from)
+                .unwrap_or_else(|_| PathBuf::from("/data/files"));
             let pool = db::init_pool(&database_url).await;
             let state = AppState {
                 db: pool,
                 jwt_secret,
+                data_dir,
             };
 
             let listener = TcpListener::bind("0.0.0.0:3000").await.unwrap();

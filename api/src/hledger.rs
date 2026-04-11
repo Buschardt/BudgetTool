@@ -27,6 +27,27 @@ pub async fn run(args: &[&str]) -> Result<serde_json::Value, AppError> {
     Ok(value)
 }
 
+/// Run an hledger subcommand and return raw stdout as a string.
+/// Used for commands where JSON output is not desired (e.g., CSV conversion).
+pub async fn run_raw(args: &[&str]) -> Result<String, AppError> {
+    info!(cmd = %format!("hledger {}", args.join(" ")), "running hledger");
+
+    let output = Command::new("hledger")
+        .args(args)
+        .output()
+        .await?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
+        return Err(AppError::HledgerCommand {
+            exit_code: output.status.code().unwrap_or(-1),
+            stderr,
+        });
+    }
+
+    Ok(String::from_utf8_lossy(&output.stdout).into_owned())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -8,6 +8,7 @@ services:
     environment:
       DATABASE_URL: sqlite:/data/budgettool.db?mode=rwc
       JWT_SECRET: ${JWT_SECRET}
+      DATA_DIR: /data/files
     volumes:
       - api-data:/data
     restart: unless-stopped

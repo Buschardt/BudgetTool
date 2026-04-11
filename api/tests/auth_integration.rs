@@ -17,6 +17,7 @@ async fn test_state() -> AppState {
     AppState {
         db: pool,
         jwt_secret: "test-secret".into(),
+        data_dir: std::path::PathBuf::from("/tmp/budgettool-test"),
     }
 }
 
