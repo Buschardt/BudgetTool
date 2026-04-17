@@ -6,6 +6,55 @@ export interface FileInfo {
   created_at: string;
 }
 
+export type { RulesConfigSummary, RulesConfigDetail, RulesConfig } from './types/rules';
+import type { RulesConfigSummary, RulesConfigDetail, RulesConfig } from './types/rules';
+
+export async function listRulesConfigs(): Promise<RulesConfigSummary[]> {
+  return request<RulesConfigSummary[]>('/api/rules-configs');
+}
+
+export async function getRulesConfig(id: number): Promise<RulesConfigDetail> {
+  return request<RulesConfigDetail>(`/api/rules-configs/${id}`);
+}
+
+export async function createRulesConfig(data: {
+  name: string;
+  description?: string;
+  config: RulesConfig;
+}): Promise<RulesConfigDetail> {
+  return request<RulesConfigDetail>('/api/rules-configs', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateRulesConfig(
+  id: number,
+  data: { name?: string; description?: string; config?: RulesConfig }
+): Promise<RulesConfigDetail> {
+  return request<RulesConfigDetail>(`/api/rules-configs/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteRulesConfig(id: number): Promise<void> {
+  await request<string>(`/api/rules-configs/${id}`, { method: 'DELETE' });
+}
+
+export async function previewRulesConfig(
+  id: number,
+  csvFileId: number
+): Promise<string> {
+  return request<string>(`/api/rules-configs/${id}/preview`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ csv_file_id: csvFileId }),
+  });
+}
+
 export interface ReportParams {
   begin?: string;
   end?: string;
@@ -71,12 +120,16 @@ export async function deleteFile(id: number): Promise<void> {
 
 export async function convertCsv(
   id: number,
-  rulesFileId?: number
+  rulesFileId?: number,
+  rulesConfigId?: number
 ): Promise<FileInfo> {
   return request<FileInfo>(`/api/files/${id}/convert`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ rules_file_id: rulesFileId ?? null }),
+    body: JSON.stringify({
+      rules_file_id: rulesFileId ?? null,
+      rules_config_id: rulesConfigId ?? null,
+    }),
   });
 }
 

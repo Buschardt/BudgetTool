@@ -1,0 +1,26 @@
+/* Shared section styles used by all rules editor sections */
+.rule-section {
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  background: var(--surface, #fff);
+}
+
+.rule-section-title {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.rule-section-desc {
+  margin: 0 0 0.9rem;
+  font-size: 0.85rem;
+  color: var(--text-muted, #555);
+}
+
+.rule-section-desc code {
+  background: var(--surface-alt, #f1f5f9);
+  padding: 0.1em 0.3em;
+  border-radius: 3px;
+  font-size: 0.9em;
+}

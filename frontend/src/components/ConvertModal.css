@@ -1,0 +1,194 @@
+.convert-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.convert-modal {
+  background: var(--surface, #fff);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  max-width: 480px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.convert-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem 0.75rem;
+  border-bottom: 1px solid var(--border, #e2e8f0);
+}
+
+.convert-modal-title {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.convert-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: var(--text-muted, #888);
+  padding: 0 0.25rem;
+  line-height: 1;
+}
+
+.convert-modal-close:hover {
+  color: var(--text, #1a1a1a);
+}
+
+.convert-modal-file {
+  padding: 0.75rem 1.25rem 0;
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted, #555);
+}
+
+.convert-modal-loading,
+.convert-modal-empty {
+  padding: 1rem 1.25rem;
+  font-size: 0.9rem;
+  color: var(--text-muted, #888);
+}
+
+.convert-modal-empty a {
+  color: var(--accent, #2563eb);
+}
+
+.convert-modal-options {
+  padding: 0.5rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.convert-modal-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.convert-modal-group-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted, #888);
+  margin-bottom: 0.15rem;
+}
+
+.convert-modal-option {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.1s, background 0.1s;
+}
+
+.convert-modal-option:has(input:checked) {
+  border-color: var(--accent, #2563eb);
+  background: rgba(37, 99, 235, 0.05);
+}
+
+.convert-modal-option:hover {
+  border-color: var(--accent, #2563eb);
+}
+
+.convert-modal-option input[type='radio'] {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.convert-modal-option-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.convert-modal-option-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.convert-modal-option-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted, #888);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.convert-modal-option-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  flex-shrink: 0;
+  text-transform: lowercase;
+}
+
+.convert-modal-option-badge--config {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.convert-modal-option-badge--file {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.convert-modal-footer {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem 1rem;
+  border-top: 1px solid var(--border, #e2e8f0);
+  margin-top: 0.5rem;
+}
+
+.convert-modal-confirm-btn {
+  padding: 0.45rem 1.25rem;
+  background: var(--accent, #2563eb);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.convert-modal-confirm-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.convert-modal-cancel-btn {
+  padding: 0.45rem 1rem;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.convert-modal-cancel-btn:hover {
+  background: var(--surface-alt, #f1f5f9);
+}

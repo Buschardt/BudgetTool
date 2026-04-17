@@ -7,6 +7,7 @@ use crate::error::AppError;
 use crate::hledger;
 use crate::models::{AppState, Claims, FileInfo, FileRecord};
 use crate::response::ApiResponse;
+use crate::rules_configs;
 
 const MAX_FILE_SIZE: usize = 10 * 1024 * 1024; // 10 MB
 const ALLOWED_EXTENSIONS: &[&str] = &["journal", "csv", "rules"];
@@ -176,6 +177,7 @@ pub async fn delete(
 #[derive(Deserialize)]
 pub struct ConvertRequest {
     pub rules_file_id: Option<i64>,
+    pub rules_config_id: Option<i64>,
 }
 
 pub async fn convert_csv(
@@ -204,8 +206,10 @@ pub async fn convert_csv(
         )));
     }
 
-    // Resolve rules file
-    let rules = if let Some(rules_id) = body.rules_file_id {
+    // Resolve rules file — prefer rules_config_id, then rules_file_id, then auto-match by stem
+    let rules_disk_path: String = if let Some(config_id) = body.rules_config_id {
+        rules_configs::resolve_rules_path(&state, config_id, claims.sub).await?
+    } else if let Some(rules_id) = body.rules_file_id {
         let r: Option<FileRecord> = sqlx::query_as(
             "SELECT id, user_id, filename, file_type, size_bytes, disk_path, created_at \
              FROM files WHERE id = ? AND user_id = ?",
@@ -223,7 +227,7 @@ pub async fn convert_csv(
                 r.file_type
             )));
         }
-        r
+        r.disk_path
     } else {
         // Auto-match: look for a rules file with the same stem as the CSV
         let stem = csv.filename.trim_end_matches(".csv");
@@ -241,10 +245,10 @@ pub async fn convert_csv(
 
         r.ok_or_else(|| {
             AppError::BadRequest(format!(
-                "no rules file found for '{}'; upload a .rules file or specify rules_file_id",
+                "no rules file found for '{}'; upload a .rules file, specify rules_file_id, or use a rules config",
                 csv.filename
             ))
-        })?
+        })?.disk_path
     };
 
     // Run hledger conversion
@@ -253,7 +257,7 @@ pub async fn convert_csv(
         "-f",
         &csv.disk_path,
         "--rules-file",
-        &rules.disk_path,
+        &rules_disk_path,
     ])
     .await?;
 

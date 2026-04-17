@@ -1,0 +1,60 @@
+.assignment-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.assignment-field-select {
+  min-width: 140px;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 5px;
+  font-size: 0.85rem;
+  font-family: monospace;
+  background: var(--surface, #fff);
+  color: var(--text, #1a1a1a);
+}
+
+.assignment-field-select:focus {
+  outline: none;
+  border-color: var(--accent, #2563eb);
+}
+
+.assignment-eq {
+  color: var(--text-muted, #888);
+  font-weight: 600;
+  padding: 0 0.1rem;
+}
+
+.assignment-value-input {
+  flex: 1;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 5px;
+  font-size: 0.85rem;
+  font-family: monospace;
+  background: var(--surface, #fff);
+  color: var(--text, #1a1a1a);
+}
+
+.assignment-value-input:focus {
+  outline: none;
+  border-color: var(--accent, #2563eb);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.assignment-remove-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted, #888);
+  font-size: 1.1rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  line-height: 1;
+}
+
+.assignment-remove-btn:hover {
+  color: #dc2626;
+  background: #fef2f2;
+}

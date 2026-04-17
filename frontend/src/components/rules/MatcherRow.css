@@ -1,0 +1,102 @@
+.matcher-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.matcher-and-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--text-muted, #888);
+  background: var(--surface-alt, #f1f5f9);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 4px;
+  padding: 0.15rem 0.4rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.matcher-field-select {
+  min-width: 130px;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 5px;
+  font-size: 0.8rem;
+  font-family: monospace;
+  background: var(--surface, #fff);
+  color: var(--text, #1a1a1a);
+}
+
+.matcher-field-select:focus {
+  outline: none;
+  border-color: var(--accent, #2563eb);
+}
+
+.matcher-custom-field-input {
+  width: 100px;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 5px;
+  font-size: 0.8rem;
+  font-family: monospace;
+  background: var(--surface, #fff);
+}
+
+.matcher-negate-btn {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 4px;
+  background: var(--surface, #fff);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted, #888);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.matcher-negate-btn--active {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+.matcher-negate-btn:hover:not(.matcher-negate-btn--active) {
+  background: var(--surface-alt, #f1f5f9);
+}
+
+.matcher-pattern-input {
+  flex: 1;
+  min-width: 120px;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 5px;
+  font-size: 0.85rem;
+  font-family: monospace;
+  background: var(--surface, #fff);
+  color: var(--text, #1a1a1a);
+}
+
+.matcher-pattern-input:focus {
+  outline: none;
+  border-color: var(--accent, #2563eb);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.matcher-remove-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted, #888);
+  font-size: 1.1rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.matcher-remove-btn:hover {
+  color: #dc2626;
+  background: #fef2f2;
+}

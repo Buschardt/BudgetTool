@@ -1,0 +1,71 @@
+.fields-empty {
+  color: var(--text-muted, #888);
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+}
+
+.fields-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.fields-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fields-col-num {
+  font-size: 0.8rem;
+  color: var(--text-muted, #888);
+  min-width: 3.5rem;
+}
+
+.fields-input {
+  flex: 1;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 5px;
+  font-size: 0.9rem;
+  font-family: monospace;
+  background: var(--surface, #fff);
+  color: var(--text, #1a1a1a);
+}
+
+.fields-input:focus {
+  outline: none;
+  border-color: var(--accent, #2563eb);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.fields-remove-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted, #888);
+  font-size: 1.1rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+}
+
+.fields-remove-btn:hover {
+  color: #dc2626;
+  background: #fef2f2;
+}
+
+.fields-add-btn {
+  padding: 0.35rem 0.75rem;
+  border: 1px dashed var(--border, #d1d5db);
+  border-radius: 5px;
+  background: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text-muted, #555);
+}
+
+.fields-add-btn:hover {
+  border-color: var(--accent, #2563eb);
+  color: var(--accent, #2563eb);
+}

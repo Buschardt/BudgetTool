@@ -1,0 +1,132 @@
+.cte-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted, #555);
+  margin: 0 0 0.75rem;
+}
+
+.cte-table-wrapper {
+  overflow-x: auto;
+  margin-bottom: 0.75rem;
+}
+
+.cte-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.85rem;
+}
+
+.cte-th {
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--border, #e2e8f0);
+  background: var(--surface-alt, #f8fafc);
+  text-align: left;
+  font-weight: 600;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.cte-th--pattern {
+  min-width: 160px;
+}
+
+.cte-th--actions {
+  width: 60px;
+}
+
+.cte-table td {
+  padding: 0.3rem 0.4rem;
+  border: 1px solid var(--border, #e2e8f0);
+  vertical-align: middle;
+}
+
+.cte-field-select {
+  font-size: 0.8rem;
+  font-family: monospace;
+  padding: 0.2rem 0.3rem;
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 4px;
+  background: var(--surface, #fff);
+  max-width: 130px;
+}
+
+.cte-remove-col-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted, #888);
+  font-size: 1rem;
+  padding: 0 0.2rem;
+  margin-left: 0.2rem;
+}
+
+.cte-remove-col-btn:hover {
+  color: #dc2626;
+}
+
+.cte-add-col-btn {
+  padding: 0.2rem 0.5rem;
+  border: 1px dashed var(--border, #d1d5db);
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: var(--text-muted, #555);
+}
+
+.cte-add-col-btn:hover {
+  border-color: var(--accent, #2563eb);
+  color: var(--accent, #2563eb);
+}
+
+.cte-pattern-input,
+.cte-value-input {
+  width: 100%;
+  padding: 0.25rem 0.4rem;
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 4px;
+  font-size: 0.82rem;
+  font-family: monospace;
+  background: var(--surface, #fff);
+  box-sizing: border-box;
+}
+
+.cte-pattern-input:focus,
+.cte-value-input:focus {
+  outline: none;
+  border-color: var(--accent, #2563eb);
+}
+
+.cte-remove-row-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted, #888);
+  font-size: 1.1rem;
+  padding: 0.1rem 0.3rem;
+}
+
+.cte-remove-row-btn:hover {
+  color: #dc2626;
+}
+
+.cte-empty-row {
+  text-align: center;
+  color: var(--text-muted, #888);
+  padding: 0.75rem;
+  font-style: italic;
+}
+
+.cte-add-row-btn {
+  padding: 0.35rem 0.75rem;
+  border: 1px dashed var(--border, #d1d5db);
+  border-radius: 5px;
+  background: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text-muted, #555);
+}
+
+.cte-add-row-btn:hover {
+  border-color: var(--accent, #2563eb);
+  color: var(--accent, #2563eb);
+}

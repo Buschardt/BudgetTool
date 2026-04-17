@@ -1,0 +1,141 @@
+.rules-editor-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding-bottom: 2rem;
+}
+
+.rules-editor-loading {
+  color: var(--text-muted, #888);
+  padding: 1rem;
+}
+
+.rules-editor-header {
+  margin-bottom: 1.5rem;
+}
+
+.rules-editor-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.rules-editor-back-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--accent, #2563eb);
+  font-size: 0.9rem;
+  padding: 0.25rem 0.4rem;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.rules-editor-back-btn:hover {
+  background: var(--surface-alt, #f1f5f9);
+}
+
+.rules-editor-title {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.rules-editor-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rules-editor-name-row {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.rules-editor-name-input {
+  flex: 1;
+  min-width: 220px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  background: var(--surface, #fff);
+  color: var(--text, #1a1a1a);
+}
+
+.rules-editor-name-input:focus {
+  outline: none;
+  border-color: var(--accent, #2563eb);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.rules-editor-desc-input {
+  flex: 2;
+  min-width: 220px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  resize: vertical;
+  background: var(--surface, #fff);
+  color: var(--text, #1a1a1a);
+}
+
+.rules-editor-desc-input:focus {
+  outline: none;
+  border-color: var(--accent, #2563eb);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.rules-editor-save-error {
+  color: #dc2626;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.rules-editor-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.rules-editor-save-btn {
+  padding: 0.45rem 1.25rem;
+  background: var(--accent, #2563eb);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.rules-editor-save-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.rules-editor-save-btn:not(:disabled):hover {
+  opacity: 0.9;
+}
+
+.rules-editor-cancel-btn {
+  padding: 0.45rem 1rem;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text, #333);
+}
+
+.rules-editor-cancel-btn:hover {
+  background: var(--surface-alt, #f1f5f9);
+}
+
+.rules-editor-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}

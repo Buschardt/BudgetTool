@@ -1,0 +1,154 @@
+.rules-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.rules-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.rules-page-header h1 {
+  margin: 0 0 0.25rem;
+}
+
+.rules-page-subtitle {
+  margin: 0;
+  color: var(--text-muted, #666);
+  font-size: 0.9rem;
+}
+
+.rules-page-new-btn {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: var(--accent, #2563eb);
+  color: #fff;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.rules-page-new-btn:hover {
+  opacity: 0.9;
+}
+
+.rules-page-loading,
+.rules-page-error {
+  padding: 1rem;
+  color: var(--text-muted, #666);
+}
+
+.rules-page-error {
+  color: #dc2626;
+}
+
+.rules-page-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-muted, #666);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rules-page-empty .rules-page-new-btn {
+  margin-top: 0.5rem;
+}
+
+.rules-config-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.rules-config-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 8px;
+  background: var(--surface, #fff);
+}
+
+.rules-config-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.rules-config-card-name {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--accent, #2563eb);
+  text-decoration: none;
+}
+
+.rules-config-card-name:hover {
+  text-decoration: underline;
+}
+
+.rules-config-card-desc {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted, #555);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rules-config-card-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted, #888);
+}
+
+.rules-config-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.rules-config-btn {
+  padding: 0.35rem 0.75rem;
+  border-radius: 5px;
+  font-size: 0.85rem;
+  border: 1px solid var(--border, #e2e8f0);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  background: var(--surface, #fff);
+  color: var(--text, #1a1a1a);
+}
+
+.rules-config-btn--edit {
+  background: var(--surface, #fff);
+}
+
+.rules-config-btn--edit:hover {
+  background: var(--surface-hover, #f1f5f9);
+}
+
+.rules-config-btn--delete {
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
+.rules-config-btn--delete:hover:not(:disabled) {
+  background: #fef2f2;
+}
+
+.rules-config-btn--delete:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

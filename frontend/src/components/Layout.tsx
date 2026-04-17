@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { to: '/income', label: 'Income', end: false },
   { to: '/register', label: 'Register', end: false },
   { to: '/cashflow', label: 'Cash Flow', end: false },
+  { to: '/rules', label: 'Rules', end: false },
   { to: '/files', label: 'Files', end: false },
 ];
 

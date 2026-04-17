@@ -1,0 +1,71 @@
+.general-settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+@media (max-width: 640px) {
+  .general-settings-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.gs-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.gs-field--checkboxes {
+  grid-column: 1 / -1;
+  gap: 0.5rem;
+}
+
+.gs-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text, #1a1a1a);
+}
+
+.gs-input,
+.gs-select {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 5px;
+  font-size: 0.9rem;
+  background: var(--surface, #fff);
+  color: var(--text, #1a1a1a);
+}
+
+.gs-input:focus,
+.gs-select:focus {
+  outline: none;
+  border-color: var(--accent, #2563eb);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.gs-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted, #6b7280);
+}
+
+.gs-hint code {
+  background: var(--surface-alt, #f1f5f9);
+  padding: 0.1em 0.3em;
+  border-radius: 3px;
+  font-size: 0.85em;
+}
+
+.gs-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.gs-checkbox-label input[type='checkbox'] {
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+}

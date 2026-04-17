@@ -1,0 +1,29 @@
+.includes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.includes-item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.includes-item input[type='checkbox'] {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.includes-name {
+  font-weight: 500;
+}
+
+.includes-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted, #888);
+}
