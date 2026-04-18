@@ -239,21 +239,36 @@ export function parseIncomeStatement(raw: unknown): IncomeExpenseSummary {
 // register
 // ---------------------------------------------------------------------------
 
-// hledger register --output-format=json returns an array of objects:
-// { date, date2, description, account, amount: mixedAmount, runningTotal: mixedAmount }
+// hledger register --output-format=json returns an array of 5-tuples:
+// [date|null, date2|null, description|null, posting, runningTotalMixedAmount]
+// date and description are null on continuation rows (non-first postings of a
+// multi-posting transaction); we carry forward the last non-null values.
+// posting.paccount holds the account name; posting.pamount is a MixedAmount array.
 
 export function parseRegister(raw: unknown): RegisterEntry[] {
   if (!Array.isArray(raw)) return [];
-  return raw.flatMap(item => {
-    if (!item || typeof item !== 'object') return [];
-    const r = item as Record<string, unknown>;
-    const date = typeof r['date'] === 'string' ? r['date'] : '';
-    const description = typeof r['description'] === 'string' ? r['description'] : '';
-    const account = typeof r['account'] === 'string' ? r['account'] : '';
+  const out: RegisterEntry[] = [];
+  let lastDate = '';
+  let lastDescription = '';
+  for (const item of raw) {
+    if (!Array.isArray(item) || item.length < 5) continue;
+    const date = typeof item[0] === 'string' ? item[0] : lastDate;
+    const description = typeof item[2] === 'string' ? item[2] : lastDescription;
+    lastDate = date;
+    lastDescription = description;
 
-    const { amount, commodity } = primaryAmount(r['amount'] as unknown);
-    const { amount: runningTotal } = primaryAmount(r['runningTotal'] as unknown);
+    const posting = item[3];
+    let account = '';
+    let pamount: unknown = null;
+    if (posting && typeof posting === 'object') {
+      const p = posting as Record<string, unknown>;
+      if (typeof p['paccount'] === 'string') account = p['paccount'];
+      pamount = p['pamount'];
+    }
+    const { amount, commodity } = primaryAmount(pamount);
+    const { amount: runningTotal } = primaryAmount(item[4]);
 
-    return [{ date, description, account, amount, commodity, runningTotal }];
-  });
+    out.push({ date, description, account, amount, commodity, runningTotal });
+  }
+  return out;
 }

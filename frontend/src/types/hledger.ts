@@ -21,16 +21,6 @@ export interface HledgerMixedAmount {
 // or it can be a flat array depending on hledger version.
 // We treat the raw output as unknown and parse defensively.
 
-// register JSON: array of posting objects
-export interface HledgerRegisterRow {
-  date: string;
-  date2: string | null;
-  description: string;
-  account: string;
-  amount: HledgerMixedAmount;
-  runningTotal: HledgerMixedAmount;
-}
-
 // incomestatement JSON
 export interface HledgerIncomeStatementSection {
   title: string;
