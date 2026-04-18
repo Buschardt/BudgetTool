@@ -8,8 +8,14 @@ RUN cargo build --release
 
 FROM debian:bookworm-slim
 
+ARG HLEDGER_VERSION=1.52
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends hledger ca-certificates \
+    && apt-get install -y --no-install-recommends ca-certificates curl \
+    && curl -fsSL "https://github.com/simonmichael/hledger/releases/download/${HLEDGER_VERSION}/hledger-linux-x64.tar.gz" -o /tmp/hledger.tar.gz \
+    && tar -xzf /tmp/hledger.tar.gz -C /usr/local/bin hledger \
+    && chmod +x /usr/local/bin/hledger \
+    && rm /tmp/hledger.tar.gz \
+    && apt-get purge -y curl && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/target/release/budgettool-api /usr/local/bin/budgettool-api
