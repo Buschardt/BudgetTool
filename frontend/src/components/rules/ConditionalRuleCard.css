@@ -74,16 +74,16 @@
 
 .crc-remove-btn {
   background: none;
-  border: 1px solid #fca5a5;
+  border: 1px solid rgba(248, 113, 113, 0.4);
   border-radius: 4px;
   padding: 0.2rem 0.5rem;
   cursor: pointer;
   font-size: 0.8rem;
-  color: #dc2626;
+  color: var(--danger);
 }
 
 .crc-remove-btn:hover {
-  background: #fef2f2;
+  background: rgba(248, 113, 113, 0.1);
 }
 
 /* Body */
@@ -169,12 +169,12 @@
 }
 
 .crc-remove-group-btn {
-  border: 1px solid #fca5a5;
-  color: #dc2626;
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  color: var(--danger);
 }
 
 .crc-remove-group-btn:hover {
-  background: #fef2f2;
+  background: rgba(248, 113, 113, 0.1);
 }
 
 .crc-add-group-btn {

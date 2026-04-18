@@ -58,9 +58,9 @@
 }
 
 .matcher-negate-btn--active {
-  background: #fef2f2;
-  border-color: #fca5a5;
-  color: #dc2626;
+  background: rgba(248, 113, 113, 0.1);
+  border-color: rgba(248, 113, 113, 0.4);
+  color: var(--danger);
 }
 
 .matcher-negate-btn:hover:not(.matcher-negate-btn--active) {
@@ -82,7 +82,7 @@
 .matcher-pattern-input:focus {
   outline: none;
   border-color: var(--accent, #2563eb);
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+  box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.2);
 }
 
 .matcher-remove-btn {
@@ -97,6 +97,6 @@
 }
 
 .matcher-remove-btn:hover {
-  color: #dc2626;
-  background: #fef2f2;
+  color: var(--danger);
+  background: rgba(248, 113, 113, 0.1);
 }

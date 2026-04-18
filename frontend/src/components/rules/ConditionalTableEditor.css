@@ -60,7 +60,7 @@
 }
 
 .cte-remove-col-btn:hover {
-  color: #dc2626;
+  color: var(--danger);
 }
 
 .cte-add-col-btn {
@@ -106,7 +106,7 @@
 }
 
 .cte-remove-row-btn:hover {
-  color: #dc2626;
+  color: var(--danger);
 }
 
 .cte-empty-row {

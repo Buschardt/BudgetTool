@@ -44,7 +44,7 @@
 }
 
 .rules-page-error {
-  color: #dc2626;
+  color: var(--danger);
 }
 
 .rules-page-empty {
@@ -140,12 +140,12 @@
 }
 
 .rules-config-btn--delete {
-  color: #dc2626;
-  border-color: #fca5a5;
+  color: var(--danger);
+  border-color: rgba(248, 113, 113, 0.4);
 }
 
 .rules-config-btn--delete:hover:not(:disabled) {
-  background: #fef2f2;
+  background: rgba(248, 113, 113, 0.1);
 }
 
 .rules-config-btn--delete:disabled {

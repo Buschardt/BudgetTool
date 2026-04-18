@@ -82,10 +82,10 @@
 }
 
 .preview-error {
-  color: #dc2626;
+  color: var(--danger);
   font-size: 0.85rem;
-  background: #fef2f2;
-  border: 1px solid #fca5a5;
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.4);
   border-radius: 5px;
   padding: 0.5rem 0.75rem;
   margin: 0;
@@ -118,7 +118,7 @@
 }
 
 .preview-clear-btn:hover {
-  color: #dc2626;
+  color: var(--danger);
 }
 
 .preview-output {

@@ -101,7 +101,7 @@
 
 .convert-modal-option:has(input:checked) {
   border-color: var(--accent, #2563eb);
-  background: rgba(37, 99, 235, 0.05);
+  background: rgba(100, 108, 255, 0.08);
 }
 
 .convert-modal-option:hover {
@@ -147,13 +147,13 @@
 }
 
 .convert-modal-option-badge--config {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: rgba(100, 108, 255, 0.2);
+  color: var(--accent);
 }
 
 .convert-modal-option-badge--file {
-  background: #f3f4f6;
-  color: #374151;
+  background: rgba(156, 163, 175, 0.15);
+  color: var(--text);
 }
 
 .convert-modal-footer {

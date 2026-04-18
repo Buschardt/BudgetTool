@@ -9,6 +9,10 @@
   --success: #34d399;
   --danger: #f87171;
   --radius: 8px;
+  --surface: var(--card-bg);
+  --surface-alt: #222;
+  --surface-hover: #2a2a2a;
+  --text-muted: #6b7280;
 
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
