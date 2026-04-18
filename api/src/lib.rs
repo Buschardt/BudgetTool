@@ -30,6 +30,7 @@ pub fn app(state: AppState) -> Router {
         .route("/api/files", get(files::list).post(files::upload))
         .route("/api/files/{id}", get(files::get_one).delete(files::delete))
         .route("/api/files/{id}/convert", post(files::convert_csv))
+        .route("/api/journals", post(files::create_journal))
         .route(
             "/api/rules-configs",
             get(rules_configs::list).post(rules_configs::create),

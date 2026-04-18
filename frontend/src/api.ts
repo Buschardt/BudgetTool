@@ -118,6 +118,14 @@ export async function deleteFile(id: number): Promise<void> {
   await request<string>(`/api/files/${id}`, { method: 'DELETE' });
 }
 
+export async function createJournal(name: string): Promise<FileInfo> {
+  return request<FileInfo>('/api/journals', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  });
+}
+
 export async function convertCsv(
   id: number,
   rulesFileId?: number,

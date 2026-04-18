@@ -1,0 +1,133 @@
+.new-journal-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.new-journal-modal {
+  background: var(--surface, #fff);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  max-width: 420px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.new-journal-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem 0.75rem;
+  border-bottom: 1px solid var(--border, #e2e8f0);
+}
+
+.new-journal-modal-title {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.new-journal-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: var(--text-muted, #888);
+  padding: 0 0.25rem;
+  line-height: 1;
+}
+
+.new-journal-modal-close:hover {
+  color: var(--text, #1a1a1a);
+}
+
+.new-journal-modal-body {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 1.25rem;
+  gap: 0.4rem;
+}
+
+.new-journal-modal-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text, #1a1a1a);
+}
+
+.new-journal-modal-input {
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  background: var(--surface, #fff);
+  color: var(--text, #1a1a1a);
+  outline: none;
+  transition: border-color 0.1s;
+}
+
+.new-journal-modal-input:focus {
+  border-color: var(--accent, #2563eb);
+}
+
+.new-journal-modal-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.new-journal-modal-hint {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-muted, #888);
+}
+
+.new-journal-modal-error {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--danger, #dc2626);
+}
+
+.new-journal-modal-footer {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem 1rem;
+  border-top: 1px solid var(--border, #e2e8f0);
+}
+
+.new-journal-modal-create-btn {
+  padding: 0.45rem 1.25rem;
+  background: var(--accent, #2563eb);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.new-journal-modal-create-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.new-journal-modal-cancel-btn {
+  padding: 0.45rem 1rem;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.new-journal-modal-cancel-btn:hover {
+  background: var(--surface-alt, #f1f5f9);
+}
+
+.new-journal-modal-cancel-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

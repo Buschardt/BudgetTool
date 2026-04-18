@@ -12,6 +12,22 @@ use crate::rules_configs;
 const MAX_FILE_SIZE: usize = 10 * 1024 * 1024; // 10 MB
 const ALLOWED_EXTENSIONS: &[&str] = &["journal", "csv", "rules"];
 
+/// Normalize a user-supplied journal name: append `.journal` if no extension,
+/// keep it if already `.journal`, or return an error for any other extension.
+fn normalize_journal_name(name: &str) -> Result<String, AppError> {
+    let trimmed = name.trim();
+    if trimmed.is_empty() {
+        return Err(AppError::BadRequest("journal name cannot be empty".into()));
+    }
+    match file_extension(trimmed) {
+        None => Ok(format!("{trimmed}.journal")),
+        Some("journal") => Ok(trimmed.to_string()),
+        Some(ext) => Err(AppError::BadRequest(format!(
+            "expected a .journal name but got '.{ext}'; omit the extension or use '.journal'"
+        ))),
+    }
+}
+
 /// Sanitize an uploaded filename: keep only the final path component, reject traversal.
 /// Returns None if the result is empty or a bare dot-segment.
 fn sanitize_filename(name: &str) -> Option<String> {
@@ -290,6 +306,61 @@ pub async fn convert_csv(
     Ok(ApiResponse::success(FileInfo::from(record)))
 }
 
+#[derive(Deserialize)]
+pub struct CreateJournalRequest {
+    pub name: String,
+}
+
+pub async fn create_journal(
+    claims: Claims,
+    State(state): State<AppState>,
+    Json(body): Json<CreateJournalRequest>,
+) -> Result<Json<ApiResponse<FileInfo>>, AppError> {
+    let filename = normalize_journal_name(&body.name)?;
+
+    let filename = sanitize_filename(&filename)
+        .ok_or_else(|| AppError::BadRequest(format!("invalid journal name: {}", body.name)))?;
+
+    let existing: Option<FileRecord> = sqlx::query_as(
+        "SELECT id, user_id, filename, file_type, size_bytes, disk_path, created_at \
+         FROM files WHERE user_id = ? AND filename = ? AND file_type = 'journal' LIMIT 1",
+    )
+    .bind(claims.sub)
+    .bind(&filename)
+    .fetch_optional(&state.db)
+    .await
+    .map_err(|e| AppError::Internal(format!("db: {e}")))?;
+
+    if existing.is_some() {
+        return Err(AppError::BadRequest(format!(
+            "a journal named '{filename}' already exists"
+        )));
+    }
+
+    let user_dir = state.data_dir.join(claims.sub.to_string());
+    tokio::fs::create_dir_all(&user_dir).await?;
+
+    let disk_filename = format!("{}_{}", Uuid::new_v4(), filename);
+    let disk_path = user_dir.join(&disk_filename);
+    tokio::fs::write(&disk_path, b"").await?;
+
+    let disk_path_str = disk_path.to_string_lossy().into_owned();
+
+    let record: FileRecord = sqlx::query_as(
+        "INSERT INTO files (user_id, filename, file_type, size_bytes, disk_path) \
+         VALUES (?, ?, 'journal', 0, ?) \
+         RETURNING id, user_id, filename, file_type, size_bytes, disk_path, created_at",
+    )
+    .bind(claims.sub)
+    .bind(&filename)
+    .bind(&disk_path_str)
+    .fetch_one(&state.db)
+    .await
+    .map_err(|e| AppError::Internal(format!("db insert: {e}")))?;
+
+    Ok(ApiResponse::success(FileInfo::from(record)))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -334,6 +405,39 @@ mod tests {
     fn sanitize_rejects_empty() {
         assert_eq!(sanitize_filename(""), None);
         assert_eq!(sanitize_filename("///"), None);
+    }
+
+    #[test]
+    fn normalize_adds_extension() {
+        assert_eq!(normalize_journal_name("2026").unwrap(), "2026.journal");
+    }
+
+    #[test]
+    fn normalize_keeps_journal_extension() {
+        assert_eq!(
+            normalize_journal_name("2026.journal").unwrap(),
+            "2026.journal"
+        );
+    }
+
+    #[test]
+    fn normalize_rejects_other_extensions() {
+        assert!(matches!(
+            normalize_journal_name("foo.csv"),
+            Err(AppError::BadRequest(_))
+        ));
+    }
+
+    #[test]
+    fn normalize_rejects_empty() {
+        assert!(matches!(
+            normalize_journal_name(""),
+            Err(AppError::BadRequest(_))
+        ));
+        assert!(matches!(
+            normalize_journal_name("   "),
+            Err(AppError::BadRequest(_))
+        ));
     }
 
     #[test]

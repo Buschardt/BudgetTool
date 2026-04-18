@@ -18,3 +18,26 @@
 .files-page-error {
   color: var(--danger);
 }
+
+.files-page-actions {
+  margin-bottom: 1.5rem;
+}
+
+.files-page-toolbar {
+  margin-top: 0.75rem;
+}
+
+.files-page-new-journal-btn {
+  padding: 0.4rem 0.9rem;
+  background: var(--surface);
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--text);
+}
+
+.files-page-new-journal-btn:hover {
+  background: var(--surface-alt, #f1f5f9);
+  border-color: var(--accent);
+}

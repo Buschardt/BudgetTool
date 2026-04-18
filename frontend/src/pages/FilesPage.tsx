@@ -3,12 +3,14 @@ import { listFiles } from '../api';
 import type { FileInfo } from '../api';
 import { FileUploader } from '../components/FileUploader';
 import { FileList } from '../components/FileList';
+import { NewJournalModal } from '../components/NewJournalModal';
 import './FilesPage.css';
 
 export function FilesPage() {
   const [files, setFiles] = useState<FileInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showNewJournal, setShowNewJournal] = useState(false);
 
   useEffect(() => {
     listFiles()
@@ -36,7 +38,25 @@ export function FilesPage() {
         Upload .journal, .csv, or .rules files. Convert CSV files to journal format for reporting.
       </p>
 
-      <FileUploader onUploaded={handleUploaded} />
+      <div className="files-page-actions">
+        <FileUploader onUploaded={handleUploaded} />
+        <div className="files-page-toolbar">
+          <button
+            type="button"
+            className="files-page-new-journal-btn"
+            onClick={() => setShowNewJournal(true)}
+          >
+            + New journal
+          </button>
+        </div>
+      </div>
+
+      {showNewJournal && (
+        <NewJournalModal
+          onCreated={file => { handleUploaded(file); setShowNewJournal(false); }}
+          onCancel={() => setShowNewJournal(false)}
+        />
+      )}
 
       {loading && <p className="files-page-loading">Loading…</p>}
       {error && <p className="files-page-error">{error}</p>}
