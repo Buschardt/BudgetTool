@@ -1,4 +1,4 @@
-use crate::error::AppError;
+use crate::core::error::AppError;
 use tokio::process::Command;
 use tracing::info;
 
@@ -53,7 +53,6 @@ mod tests {
     fn empty_output_is_parse_error() {
         let result: Result<serde_json::Value, _> = serde_json::from_slice(b"");
         assert!(result.is_err());
-        // Confirm it converts to AppError::HledgerParse
         let err: AppError = result.unwrap_err().into();
         assert!(matches!(err, AppError::HledgerParse(_)));
     }

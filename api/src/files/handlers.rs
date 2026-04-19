@@ -3,57 +3,17 @@ use axum::extract::{Multipart, Path, State};
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::error::AppError;
-use crate::hledger;
-use crate::models::{AppState, Claims, FileInfo, FileRecord};
-use crate::response::ApiResponse;
-use crate::rules_configs;
+use crate::auth::Claims;
+use crate::core::AppState;
+use crate::core::error::AppError;
+use crate::core::hledger;
+use crate::core::response::ApiResponse;
+use crate::files::filename::{file_extension, normalize_journal_name, sanitize_filename};
+use crate::files::models::{FileInfo, FileRecord};
+use crate::rules;
 
 const MAX_FILE_SIZE: usize = 10 * 1024 * 1024; // 10 MB
 const ALLOWED_EXTENSIONS: &[&str] = &["journal", "csv", "rules"];
-
-/// Normalize a user-supplied journal name: append `.journal` if no extension,
-/// keep it if already `.journal`, or return an error for any other extension.
-fn normalize_journal_name(name: &str) -> Result<String, AppError> {
-    let trimmed = name.trim();
-    if trimmed.is_empty() {
-        return Err(AppError::BadRequest("journal name cannot be empty".into()));
-    }
-    match file_extension(trimmed) {
-        None => Ok(format!("{trimmed}.journal")),
-        Some("journal") => Ok(trimmed.to_string()),
-        Some(ext) => Err(AppError::BadRequest(format!(
-            "expected a .journal name but got '.{ext}'; omit the extension or use '.journal'"
-        ))),
-    }
-}
-
-/// Sanitize an uploaded filename: keep only the final path component, reject traversal.
-/// Returns None if the result is empty or a bare dot-segment.
-fn sanitize_filename(name: &str) -> Option<String> {
-    // Strip path separators and take only the last segment
-    let basename = name
-        .replace('\\', "/")
-        .split('/')
-        .rfind(|s| !s.is_empty())
-        .map(|s| s.to_string())?;
-
-    // Reject dot-only segments and names containing null bytes
-    if basename == "." || basename == ".." || basename.contains('\0') {
-        return None;
-    }
-
-    Some(basename)
-}
-
-/// Extract the file extension from a filename.
-/// Returns None for dotfiles (e.g. `.hidden`) and files with no extension.
-fn file_extension(filename: &str) -> Option<&str> {
-    // Find the last dot that isn't the very first character
-    let dot_pos = filename[1..].rfind('.')?.checked_add(1)?;
-    let ext = &filename[dot_pos + 1..];
-    if ext.is_empty() { None } else { Some(ext) }
-}
 
 pub async fn upload(
     claims: Claims,
@@ -115,8 +75,7 @@ pub async fn upload(
     .bind(size_bytes)
     .bind(&disk_path_str)
     .fetch_one(&state.db)
-    .await
-    .map_err(|e| AppError::Internal(format!("db insert: {e}")))?;
+    .await?;
 
     Ok(ApiResponse::success(FileInfo::from(record)))
 }
@@ -131,8 +90,7 @@ pub async fn list(
     )
     .bind(claims.sub)
     .fetch_all(&state.db)
-    .await
-    .map_err(|e| AppError::Internal(format!("db: {e}")))?;
+    .await?;
 
     Ok(ApiResponse::success(
         records.into_iter().map(FileInfo::from).collect(),
@@ -151,8 +109,7 @@ pub async fn get_one(
     .bind(id)
     .bind(claims.sub)
     .fetch_optional(&state.db)
-    .await
-    .map_err(|e| AppError::Internal(format!("db: {e}")))?;
+    .await?;
 
     let record = record.ok_or_else(|| AppError::NotFound(format!("file {id}")))?;
     Ok(ApiResponse::success(FileInfo::from(record)))
@@ -170,8 +127,7 @@ pub async fn delete(
     .bind(id)
     .bind(claims.sub)
     .fetch_optional(&state.db)
-    .await
-    .map_err(|e| AppError::Internal(format!("db: {e}")))?;
+    .await?;
 
     let record = record.ok_or_else(|| AppError::NotFound(format!("file {id}")))?;
 
@@ -184,8 +140,7 @@ pub async fn delete(
     sqlx::query("DELETE FROM files WHERE id = ?")
         .bind(id)
         .execute(&state.db)
-        .await
-        .map_err(|e| AppError::Internal(format!("db delete: {e}")))?;
+        .await?;
 
     Ok(ApiResponse::success("deleted"))
 }
@@ -202,7 +157,6 @@ pub async fn convert_csv(
     Path(id): Path<i64>,
     Json(body): Json<ConvertRequest>,
 ) -> Result<Json<ApiResponse<FileInfo>>, AppError> {
-    // Fetch the CSV file
     let csv: Option<FileRecord> = sqlx::query_as(
         "SELECT id, user_id, filename, file_type, size_bytes, disk_path, created_at \
          FROM files WHERE id = ? AND user_id = ?",
@@ -210,8 +164,7 @@ pub async fn convert_csv(
     .bind(id)
     .bind(claims.sub)
     .fetch_optional(&state.db)
-    .await
-    .map_err(|e| AppError::Internal(format!("db: {e}")))?;
+    .await?;
 
     let csv = csv.ok_or_else(|| AppError::NotFound(format!("file {id}")))?;
 
@@ -224,7 +177,7 @@ pub async fn convert_csv(
 
     // Resolve rules file — prefer rules_config_id, then rules_file_id, then auto-match by stem
     let rules_disk_path: String = if let Some(config_id) = body.rules_config_id {
-        rules_configs::resolve_rules_path(&state, config_id, claims.sub).await?
+        rules::resolve_rules_path(&state, config_id, claims.sub).await?
     } else if let Some(rules_id) = body.rules_file_id {
         let r: Option<FileRecord> = sqlx::query_as(
             "SELECT id, user_id, filename, file_type, size_bytes, disk_path, created_at \
@@ -233,8 +186,7 @@ pub async fn convert_csv(
         .bind(rules_id)
         .bind(claims.sub)
         .fetch_optional(&state.db)
-        .await
-        .map_err(|e| AppError::Internal(format!("db: {e}")))?;
+        .await?;
 
         let r = r.ok_or_else(|| AppError::NotFound(format!("rules file {rules_id}")))?;
         if r.file_type != "rules" {
@@ -245,7 +197,6 @@ pub async fn convert_csv(
         }
         r.disk_path
     } else {
-        // Auto-match: look for a rules file with the same stem as the CSV
         let stem = csv.filename.trim_end_matches(".csv");
         let rules_pattern = format!("{stem}.rules");
         let r: Option<FileRecord> = sqlx::query_as(
@@ -256,8 +207,7 @@ pub async fn convert_csv(
         .bind(claims.sub)
         .bind(&rules_pattern)
         .fetch_optional(&state.db)
-        .await
-        .map_err(|e| AppError::Internal(format!("db: {e}")))?;
+        .await?;
 
         r.ok_or_else(|| {
             AppError::BadRequest(format!(
@@ -267,7 +217,6 @@ pub async fn convert_csv(
         })?.disk_path
     };
 
-    // Run hledger conversion
     let journal_text = hledger::run_raw(&[
         "print",
         "-f",
@@ -277,7 +226,6 @@ pub async fn convert_csv(
     ])
     .await?;
 
-    // Write output journal file
     let stem = csv.filename.trim_end_matches(".csv");
     let out_filename = format!("{stem}.journal");
     let user_dir = state.data_dir.join(claims.sub.to_string());
@@ -300,8 +248,7 @@ pub async fn convert_csv(
     .bind(size_bytes)
     .bind(&disk_path_str)
     .fetch_one(&state.db)
-    .await
-    .map_err(|e| AppError::Internal(format!("db insert: {e}")))?;
+    .await?;
 
     Ok(ApiResponse::success(FileInfo::from(record)))
 }
@@ -328,8 +275,7 @@ pub async fn create_journal(
     .bind(claims.sub)
     .bind(&filename)
     .fetch_optional(&state.db)
-    .await
-    .map_err(|e| AppError::Internal(format!("db: {e}")))?;
+    .await?;
 
     if existing.is_some() {
         return Err(AppError::BadRequest(format!(
@@ -355,97 +301,7 @@ pub async fn create_journal(
     .bind(&filename)
     .bind(&disk_path_str)
     .fetch_one(&state.db)
-    .await
-    .map_err(|e| AppError::Internal(format!("db insert: {e}")))?;
+    .await?;
 
     Ok(ApiResponse::success(FileInfo::from(record)))
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn sanitize_normal_filename() {
-        assert_eq!(
-            sanitize_filename("transactions.csv"),
-            Some("transactions.csv".into())
-        );
-    }
-
-    #[test]
-    fn sanitize_strips_path_separators() {
-        assert_eq!(sanitize_filename("../../etc/passwd"), Some("passwd".into()));
-        assert_eq!(
-            sanitize_filename("foo/bar/baz.journal"),
-            Some("baz.journal".into())
-        );
-    }
-
-    #[test]
-    fn sanitize_strips_windows_separators() {
-        assert_eq!(
-            sanitize_filename("C:\\Users\\bob\\file.csv"),
-            Some("file.csv".into())
-        );
-    }
-
-    #[test]
-    fn sanitize_rejects_bare_dotdot() {
-        assert_eq!(sanitize_filename(".."), None);
-        assert_eq!(sanitize_filename("."), None);
-    }
-
-    #[test]
-    fn sanitize_rejects_null_byte() {
-        assert_eq!(sanitize_filename("file\0name.csv"), None);
-    }
-
-    #[test]
-    fn sanitize_rejects_empty() {
-        assert_eq!(sanitize_filename(""), None);
-        assert_eq!(sanitize_filename("///"), None);
-    }
-
-    #[test]
-    fn normalize_adds_extension() {
-        assert_eq!(normalize_journal_name("2026").unwrap(), "2026.journal");
-    }
-
-    #[test]
-    fn normalize_keeps_journal_extension() {
-        assert_eq!(
-            normalize_journal_name("2026.journal").unwrap(),
-            "2026.journal"
-        );
-    }
-
-    #[test]
-    fn normalize_rejects_other_extensions() {
-        assert!(matches!(
-            normalize_journal_name("foo.csv"),
-            Err(AppError::BadRequest(_))
-        ));
-    }
-
-    #[test]
-    fn normalize_rejects_empty() {
-        assert!(matches!(
-            normalize_journal_name(""),
-            Err(AppError::BadRequest(_))
-        ));
-        assert!(matches!(
-            normalize_journal_name("   "),
-            Err(AppError::BadRequest(_))
-        ));
-    }
-
-    #[test]
-    fn extension_detection() {
-        assert_eq!(file_extension("foo.csv"), Some("csv"));
-        assert_eq!(file_extension("foo.journal"), Some("journal"));
-        assert_eq!(file_extension("foo.rules"), Some("rules"));
-        assert_eq!(file_extension("noext"), None);
-        assert_eq!(file_extension(".hidden"), None);
-    }
 }

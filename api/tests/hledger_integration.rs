@@ -3,8 +3,8 @@
 //! These tests require the `hledger` binary on PATH.
 //! Run with: cargo test -- --ignored
 
-use budgettool_api::error::AppError;
-use budgettool_api::hledger;
+use budgettool_api::core::error::AppError;
+use budgettool_api::core::hledger;
 use std::io::Write;
 
 #[tokio::test]

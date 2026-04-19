@@ -1,13 +1,7 @@
-use axum::Json;
-use axum::extract::FromRequestParts;
-use axum::extract::State;
-use axum::http::request::Parts;
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation};
-use tracing::warn;
 
-use crate::error::AppError;
-use crate::models::{AppState, Claims, LoginRequest, LoginResponse, User};
-use crate::response::ApiResponse;
+use crate::auth::models::{Claims, User};
+use crate::core::error::AppError;
 
 pub fn encode_jwt(jwt_secret: &str, user: &User) -> Result<String, AppError> {
     let now = chrono::Utc::now();
@@ -35,52 +29,10 @@ pub fn decode_jwt(jwt_secret: &str, token: &str) -> Result<Claims, AppError> {
     Ok(token_data.claims)
 }
 
-pub async fn login(
-    State(state): State<AppState>,
-    Json(body): Json<LoginRequest>,
-) -> Result<Json<ApiResponse<LoginResponse>>, AppError> {
-    let row: Option<User> =
-        sqlx::query_as("SELECT id, username, password FROM users WHERE username = ?")
-            .bind(&body.username)
-            .fetch_optional(&state.db)
-            .await
-            .map_err(|e| AppError::Internal(format!("db: {e}")))?;
-
-    let user = row.ok_or(AppError::Unauthorized)?;
-
-    let valid = bcrypt::verify(&body.password, &user.password)
-        .map_err(|e| AppError::Internal(format!("bcrypt: {e}")))?;
-
-    if !valid {
-        warn!(username = %body.username, "failed login attempt");
-        return Err(AppError::Unauthorized);
-    }
-
-    let token = encode_jwt(&state.jwt_secret, &user)?;
-    Ok(ApiResponse::success(LoginResponse { token }))
-}
-
-impl FromRequestParts<AppState> for Claims {
-    type Rejection = AppError;
-
-    async fn from_request_parts(
-        parts: &mut Parts,
-        state: &AppState,
-    ) -> Result<Self, Self::Rejection> {
-        let token = parts
-            .headers
-            .get("Authorization")
-            .and_then(|v| v.to_str().ok())
-            .and_then(|v| v.strip_prefix("Bearer "))
-            .ok_or(AppError::Unauthorized)?;
-
-        decode_jwt(&state.jwt_secret, token)
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::auth::models::User;
 
     const SECRET: &str = "test-secret-key";
 

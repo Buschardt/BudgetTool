@@ -2,7 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::error::AppError;
+use crate::core::error::AppError;
 
 // ---------------------------------------------------------------------------
 // Domain types (mirrored in frontend/src/types/manual.ts)

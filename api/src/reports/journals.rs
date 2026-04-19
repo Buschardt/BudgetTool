@@ -1,39 +1,22 @@
-use axum::Json;
-use axum::extract::{Query, State};
-use serde::Deserialize;
 use sqlx::sqlite::SqlitePool;
 
-use crate::error::AppError;
-use crate::hledger;
-use crate::models::{AppState, Claims};
-use crate::response::ApiResponse;
-
-#[derive(Deserialize)]
-pub struct ReportQuery {
-    pub begin: Option<String>,
-    pub end: Option<String>,
-    pub period: Option<String>,
-    pub depth: Option<u32>,
-    pub account: Option<String>,
-}
+use crate::core::error::AppError;
 
 /// Fetch all journal file paths for the user from the database.
 /// Includes uploaded journals and the user's managed manual-entries journal if it exists.
 /// Returns an error only if the user has no journal data at all.
-async fn journal_args(db: &SqlitePool, user_id: i64) -> Result<Vec<String>, AppError> {
+pub async fn journal_args(db: &SqlitePool, user_id: i64) -> Result<Vec<String>, AppError> {
     let uploaded: Vec<(String,)> =
         sqlx::query_as("SELECT disk_path FROM files WHERE user_id = ? AND file_type = 'journal'")
             .bind(user_id)
             .fetch_all(db)
-            .await
-            .map_err(|e| AppError::Internal(format!("db: {e}")))?;
+            .await?;
 
     let manual: Option<(String,)> =
         sqlx::query_as("SELECT disk_path FROM manual_entry_journals WHERE user_id = ?")
             .bind(user_id)
             .fetch_optional(db)
-            .await
-            .map_err(|e| AppError::Internal(format!("db manual journal: {e}")))?;
+            .await?;
 
     if uploaded.is_empty() && manual.is_none() {
         return Err(AppError::BadRequest(
@@ -54,7 +37,7 @@ async fn journal_args(db: &SqlitePool, user_id: i64) -> Result<Vec<String>, AppE
 }
 
 /// Convert ReportQuery fields into hledger CLI flags.
-fn filter_args(query: &ReportQuery) -> Vec<String> {
+pub fn filter_args(query: &super::handlers::ReportQuery) -> Vec<String> {
     let mut args = Vec::new();
     if let Some(begin) = &query.begin {
         args.push("--begin".to_string());
@@ -79,7 +62,7 @@ fn filter_args(query: &ReportQuery) -> Vec<String> {
 }
 
 /// Build the full args slice for hledger from a subcommand, journal paths, and filters.
-fn build_args<'a>(
+pub fn build_args<'a>(
     subcommand: &'a str,
     file_args: &'a [String],
     filter_args: &'a [String],
@@ -94,57 +77,10 @@ fn build_args<'a>(
     args
 }
 
-pub async fn balance(
-    claims: Claims,
-    State(state): State<AppState>,
-    Query(query): Query<ReportQuery>,
-) -> Result<Json<ApiResponse<serde_json::Value>>, AppError> {
-    let file_args = journal_args(&state.db, claims.sub).await?;
-    let filter = filter_args(&query);
-    let args = build_args("balance", &file_args, &filter);
-    let data = hledger::run(&args).await?;
-    Ok(ApiResponse::success(data))
-}
-
-pub async fn income_statement(
-    claims: Claims,
-    State(state): State<AppState>,
-    Query(query): Query<ReportQuery>,
-) -> Result<Json<ApiResponse<serde_json::Value>>, AppError> {
-    let file_args = journal_args(&state.db, claims.sub).await?;
-    let filter = filter_args(&query);
-    let args = build_args("incomestatement", &file_args, &filter);
-    let data = hledger::run(&args).await?;
-    Ok(ApiResponse::success(data))
-}
-
-pub async fn register(
-    claims: Claims,
-    State(state): State<AppState>,
-    Query(query): Query<ReportQuery>,
-) -> Result<Json<ApiResponse<serde_json::Value>>, AppError> {
-    let file_args = journal_args(&state.db, claims.sub).await?;
-    let filter = filter_args(&query);
-    let args = build_args("register", &file_args, &filter);
-    let data = hledger::run(&args).await?;
-    Ok(ApiResponse::success(data))
-}
-
-pub async fn cashflow(
-    claims: Claims,
-    State(state): State<AppState>,
-    Query(query): Query<ReportQuery>,
-) -> Result<Json<ApiResponse<serde_json::Value>>, AppError> {
-    let file_args = journal_args(&state.db, claims.sub).await?;
-    let filter = filter_args(&query);
-    let args = build_args("cashflow", &file_args, &filter);
-    let data = hledger::run(&args).await?;
-    Ok(ApiResponse::success(data))
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::reports::handlers::ReportQuery;
 
     fn query(
         begin: Option<&str>,

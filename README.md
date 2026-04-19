@@ -9,17 +9,19 @@ browser → nginx (:8080)
                ├── /api/*  → Rust/Axum API (:3000)
                │               ├── auth (JWT)
                │               ├── file storage (journals on disk, metadata in SQLite)
+               │               ├── rules configs (.rules file generation)
+               │               ├── manual entries (prices, transactions, periodics)
                │               └── reports (invokes hledger as a subprocess)
                └── /*      → React frontend (served by nginx from built assets)
 ```
 
-| Layer     | Technology                         |
-|-----------|------------------------------------|
+| Layer     | Technology                            |
+|-----------|---------------------------------------|
 | Engine    | hledger CLI — subprocess, JSON output |
-| API       | Rust + Axum                        |
-| Frontend  | React + TypeScript + Vite          |
-| Database  | SQLite (users, file metadata)      |
-| Infra     | Docker Compose + nginx             |
+| API       | Rust + Axum                           |
+| Frontend  | React + TypeScript + Vite             |
+| Database  | SQLite (users, file metadata)         |
+| Infra     | Docker Compose + nginx                |
 
 ## Repository Layout
 
@@ -28,15 +30,45 @@ browser → nginx (:8080)
 ├── api/                   Rust API (Axum)
 │   ├── src/
 │   │   ├── main.rs        Entry point; CLI with `serve` and `seed` subcommands
-│   │   ├── lib.rs         Router definition — all routes wired here
-│   │   ├── auth.rs        JWT login handler and extractor
-│   │   ├── db.rs          SQLite pool init and migrations
-│   │   ├── models.rs      AppState, Claims, and shared data types
-│   │   ├── files.rs       Upload, list, delete, CSV-convert endpoints
-│   │   ├── hledger.rs     subprocess wrapper — runs hledger and parses JSON
-│   │   ├── reports.rs     balance, incomestatement, register, cashflow endpoints
-│   │   ├── response.rs    Typed ApiResponse<T> envelope
-│   │   └── error.rs       AppError and IntoResponse impl
+│   │   ├── lib.rs         Module declarations and pub use re-exports
+│   │   ├── routes.rs      Composes all feature routers into the root Router
+│   │   │
+│   │   ├── core/          Cross-cutting infrastructure
+│   │   │   ├── state.rs   AppState (db pool, jwt secret, data dir)
+│   │   │   ├── error.rs   AppError and IntoResponse impl
+│   │   │   ├── response.rs Typed ApiResponse<T> envelope
+│   │   │   ├── db.rs      SQLite pool init and migrations
+│   │   │   └── hledger.rs subprocess wrapper — runs hledger, parses JSON
+│   │   │
+│   │   ├── auth/          Login and JWT extraction
+│   │   │   ├── handlers.rs login, me
+│   │   │   ├── extractor.rs FromRequestParts impl for Claims
+│   │   │   ├── jwt.rs     encode_jwt / decode_jwt
+│   │   │   └── models.rs  User, Claims, LoginRequest, LoginResponse
+│   │   │
+│   │   ├── files/         File upload and CSV conversion
+│   │   │   ├── handlers.rs upload, list, get_one, delete, convert_csv, create_journal
+│   │   │   ├── models.rs  FileRecord, FileInfo
+│   │   │   └── filename.rs sanitize_filename, normalize_journal_name, file_extension
+│   │   │
+│   │   ├── rules/         Rules config CRUD and .rules file generation
+│   │   │   ├── handlers.rs list, get_one, create, update, delete, preview
+│   │   │   ├── service.rs  resolve_include_paths, generate_and_write, resolve_rules_path
+│   │   │   ├── models.rs  RulesConfigRecord, RulesConfigInfo, RulesConfigDetail
+│   │   │   └── generator.rs .rules text generation and validation
+│   │   │
+│   │   ├── manual_entries/ Manually entered journal data
+│   │   │   ├── prices.rs  Commodity price CRUD handlers
+│   │   │   ├── transactions.rs Manual transaction CRUD handlers
+│   │   │   ├── periodics.rs Periodic transaction CRUD handlers
+│   │   │   ├── journal.rs  regenerate_journal (writes manual-entries.journal)
+│   │   │   ├── models.rs  Record and Info types for all three entity kinds
+│   │   │   └── generator.rs hledger journal text generation
+│   │   │
+│   │   └── reports/       hledger report endpoints
+│   │       ├── handlers.rs balance, income_statement, register, cashflow
+│   │       └── journals.rs journal_args, filter_args, build_args helpers
+│   │
 │   ├── migrations/        SQL migration files (run on startup)
 │   ├── data/              Local dev data directory (DB + uploaded files)
 │   ├── tests/             Integration tests (auth, hledger)
@@ -106,30 +138,51 @@ cd api && cargo run -- seed --username alice --password hunter2
 
 ## API Endpoints
 
-| Method | Path                          | Description                        |
-|--------|-------------------------------|------------------------------------|
-| GET    | `/api/health`                 | Health check                       |
-| POST   | `/api/login`                  | Obtain JWT                         |
-| GET    | `/api/me`                     | Current user info (auth required)  |
-| GET    | `/api/files`                  | List uploaded files                |
-| POST   | `/api/files`                  | Upload a journal or CSV file       |
-| GET    | `/api/files/:id`              | Download a file                    |
-| DELETE | `/api/files/:id`              | Delete a file                      |
-| POST   | `/api/files/:id/convert`      | Convert CSV to hledger journal     |
-| GET    | `/api/reports/balance`        | Balance report                     |
-| GET    | `/api/reports/incomestatement`| Income statement                   |
-| GET    | `/api/reports/register`       | Transaction register               |
-| GET    | `/api/reports/cashflow`       | Cash flow statement                |
+All endpoints under `/api/files`, `/api/reports`, `/api/rules-configs`, `/api/prices`, `/api/transactions`, and `/api/periodics` require a `Bearer` JWT in the `Authorization` header.
 
-All `/api/files` and `/api/reports` routes require a `Bearer` JWT in the `Authorization` header.
+| Method | Path                              | Description                              |
+|--------|-----------------------------------|------------------------------------------|
+| GET    | `/api/health`                     | Health check                             |
+| POST   | `/api/login`                      | Obtain JWT                               |
+| GET    | `/api/me`                         | Current user info                        |
+| GET    | `/api/files`                      | List uploaded files                      |
+| POST   | `/api/files`                      | Upload a journal, CSV, or rules file     |
+| GET    | `/api/files/{id}`                 | Get file metadata                        |
+| DELETE | `/api/files/{id}`                 | Delete a file                            |
+| POST   | `/api/files/{id}/convert`         | Convert CSV to hledger journal           |
+| POST   | `/api/journals`                   | Create an empty named journal            |
+| GET    | `/api/rules-configs`              | List rules configs                       |
+| POST   | `/api/rules-configs`              | Create a rules config                    |
+| GET    | `/api/rules-configs/{id}`         | Get a rules config                       |
+| PUT    | `/api/rules-configs/{id}`         | Update a rules config                    |
+| DELETE | `/api/rules-configs/{id}`         | Delete a rules config                    |
+| POST   | `/api/rules-configs/{id}/preview` | Preview rules config against a CSV       |
+| GET    | `/api/prices`                     | List commodity prices                    |
+| POST   | `/api/prices`                     | Create a commodity price                 |
+| PUT    | `/api/prices/{id}`                | Update a commodity price                 |
+| DELETE | `/api/prices/{id}`                | Delete a commodity price                 |
+| GET    | `/api/transactions`               | List manual transactions                 |
+| POST   | `/api/transactions`               | Create a manual transaction              |
+| PUT    | `/api/transactions/{id}`          | Update a manual transaction              |
+| DELETE | `/api/transactions/{id}`          | Delete a manual transaction              |
+| GET    | `/api/periodics`                  | List periodic transactions               |
+| POST   | `/api/periodics`                  | Create a periodic transaction            |
+| PUT    | `/api/periodics/{id}`             | Update a periodic transaction            |
+| DELETE | `/api/periodics/{id}`             | Delete a periodic transaction            |
+| GET    | `/api/reports/balance`            | Balance report                           |
+| GET    | `/api/reports/incomestatement`    | Income statement                         |
+| GET    | `/api/reports/register`           | Transaction register                     |
+| GET    | `/api/reports/cashflow`           | Cash flow statement                      |
+
+Report endpoints accept optional query parameters: `begin`, `end`, `period`, `depth`, `account`.
 
 ## Environment Variables
 
-| Variable       | Description                                 | Default (dev)              |
-|----------------|---------------------------------------------|----------------------------|
+| Variable       | Description                                 | Default (dev)                        |
+|----------------|---------------------------------------------|--------------------------------------|
 | `DATABASE_URL` | SQLite connection string                    | `sqlite:data/budgettool.db?mode=rwc` |
-| `JWT_SECRET`   | Secret used to sign/verify JWTs            | *(required)*               |
-| `DATA_DIR`     | Directory where uploaded files are stored   | `data/files`               |
+| `JWT_SECRET`   | Secret used to sign/verify JWTs            | *(required)*                         |
+| `DATA_DIR`     | Directory where uploaded files are stored   | `data/files`                         |
 
 ## CI
 

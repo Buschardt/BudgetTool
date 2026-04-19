@@ -2,7 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::error::AppError;
+use crate::core::error::AppError;
 
 // ---------------------------------------------------------------------------
 // Config types (mirrored in the frontend as TypeScript interfaces)
