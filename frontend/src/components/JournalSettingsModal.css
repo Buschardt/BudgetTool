@@ -101,6 +101,16 @@
   box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.2);
 }
 
+.journal-settings-input--invalid {
+  border-color: var(--danger, #dc2626);
+  background: rgba(220, 38, 38, 0.05);
+}
+
+.journal-settings-input--invalid:focus {
+  border-color: var(--danger, #dc2626);
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.16);
+}
+
 .journal-settings-readonly {
   background: var(--surface-alt, #f8fafc);
 }
@@ -126,6 +136,63 @@
 
 .journal-settings-row .journal-settings-input {
   flex: 1;
+}
+
+.journal-settings-account-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 8px;
+  background: var(--surface-alt, #f8fafc);
+}
+
+.journal-settings-account-path {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.journal-settings-account-root {
+  flex: 0 0 180px;
+  min-width: 180px;
+}
+
+.journal-settings-account-segment-group {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.journal-settings-account-segment {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.journal-settings-account-segment .journal-settings-input {
+  min-width: 180px;
+}
+
+.journal-settings-account-separator {
+  color: var(--text-muted, #888);
+  font-weight: 600;
+}
+
+.journal-settings-account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.journal-settings-account-error {
+  margin: 0;
+  color: var(--danger, #dc2626);
+  font-size: 0.82rem;
 }
 
 .journal-settings-add-btn,
@@ -200,6 +267,24 @@
 @media (max-width: 640px) {
   .journal-settings-row {
     flex-direction: column;
+  }
+
+  .journal-settings-account-path,
+  .journal-settings-account-segment-group,
+  .journal-settings-account-segment,
+  .journal-settings-account-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .journal-settings-account-root,
+  .journal-settings-account-segment .journal-settings-input {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .journal-settings-account-separator {
+    display: none;
   }
 
   .journal-settings-section-header {
