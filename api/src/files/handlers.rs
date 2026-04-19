@@ -9,6 +9,7 @@ use crate::core::error::AppError;
 use crate::core::hledger;
 use crate::core::response::ApiResponse;
 use crate::files::filename::{file_extension, normalize_journal_name, sanitize_filename};
+use crate::files::journal_settings::{JournalSettingsData, write_journal_with_settings};
 use crate::files::models::{FileInfo, FileRecord};
 use crate::rules;
 
@@ -256,6 +257,7 @@ pub async fn convert_csv(
 #[derive(Deserialize)]
 pub struct CreateJournalRequest {
     pub name: String,
+    pub settings: Option<JournalSettingsData>,
 }
 
 pub async fn create_journal(
@@ -303,5 +305,13 @@ pub async fn create_journal(
     .fetch_one(&state.db)
     .await?;
 
-    Ok(ApiResponse::success(FileInfo::from(record)))
+    let updated = write_journal_with_settings(
+        &state,
+        &record,
+        claims.sub,
+        &body.settings.unwrap_or_default(),
+    )
+    .await?;
+
+    Ok(ApiResponse::success(updated))
 }

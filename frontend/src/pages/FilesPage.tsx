@@ -3,7 +3,7 @@ import { listFiles } from '../api';
 import type { FileInfo } from '../api';
 import { FileUploader } from '../components/FileUploader';
 import { FileList } from '../components/FileList';
-import { NewJournalModal } from '../components/NewJournalModal';
+import { JournalSettingsModal } from '../components/JournalSettingsModal';
 import './FilesPage.css';
 
 export function FilesPage() {
@@ -11,6 +11,7 @@ export function FilesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showNewJournal, setShowNewJournal] = useState(false);
+  const [editingJournal, setEditingJournal] = useState<FileInfo | null>(null);
 
   useEffect(() => {
     listFiles()
@@ -29,6 +30,10 @@ export function FilesPage() {
 
   function handleConverted(file: FileInfo) {
     setFiles(prev => [file, ...prev]);
+  }
+
+  function handleFileUpdated(file: FileInfo) {
+    setFiles(prev => prev.map(existing => (existing.id === file.id ? file : existing)));
   }
 
   return (
@@ -52,9 +57,21 @@ export function FilesPage() {
       </div>
 
       {showNewJournal && (
-        <NewJournalModal
-          onCreated={file => { handleUploaded(file); setShowNewJournal(false); }}
+        <JournalSettingsModal
+          mode="create"
+          allFiles={files}
+          onSaved={file => { handleUploaded(file); setShowNewJournal(false); }}
           onCancel={() => setShowNewJournal(false)}
+        />
+      )}
+
+      {editingJournal && (
+        <JournalSettingsModal
+          mode="edit"
+          file={editingJournal}
+          allFiles={files}
+          onSaved={file => { handleFileUpdated(file); setEditingJournal(null); }}
+          onCancel={() => setEditingJournal(null)}
         />
       )}
 
@@ -65,6 +82,7 @@ export function FilesPage() {
           files={files}
           onDeleted={handleDeleted}
           onConverted={handleConverted}
+          onEditJournal={setEditingJournal}
         />
       )}
     </div>

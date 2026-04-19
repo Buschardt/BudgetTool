@@ -9,9 +9,10 @@ interface FileListProps {
   files: FileInfo[];
   onDeleted: (id: number) => void;
   onConverted: (file: FileInfo) => void;
+  onEditJournal: (file: FileInfo) => void;
 }
 
-export function FileList({ files, onDeleted, onConverted }: FileListProps) {
+export function FileList({ files, onDeleted, onConverted, onEditJournal }: FileListProps) {
   const [converting, setConverting] = useState<number | null>(null);
   const [deleting, setDeleting] = useState<number | null>(null);
   const [convertError, setConvertError] = useState<Record<number, string>>({});
@@ -94,6 +95,15 @@ export function FileList({ files, onDeleted, onConverted }: FileListProps) {
                   type="button"
                 >
                   {converting === f.id ? 'Converting…' : 'Convert'}
+                </button>
+              )}
+              {f.file_type === 'journal' && (
+                <button
+                  className="file-list-btn file-list-btn--settings"
+                  onClick={() => onEditJournal(f)}
+                  type="button"
+                >
+                  Settings
                 </button>
               )}
               <button

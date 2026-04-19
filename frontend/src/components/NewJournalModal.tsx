@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { createJournal } from '../api';
 import type { FileInfo } from '../api';
+import { EMPTY_JOURNAL_SETTINGS } from '../types/journal';
 import './NewJournalModal.css';
 
 interface Props {
@@ -22,7 +23,7 @@ export function NewJournalModal({ onCreated, onCancel }: Props) {
     setState('creating');
     setError('');
     try {
-      const file = await createJournal(trimmed);
+      const file = await createJournal(trimmed, EMPTY_JOURNAL_SETTINGS);
       onCreated(file);
     } catch (err) {
       setState('error');

@@ -6,6 +6,9 @@ export interface FileInfo {
   created_at: string;
 }
 
+export type { JournalSettings, JournalSettingsDetail } from './types/journal';
+import type { JournalSettings, JournalSettingsDetail } from './types/journal';
+
 export type { RulesConfigSummary, RulesConfigDetail, RulesConfig } from './types/rules';
 import type { RulesConfigSummary, RulesConfigDetail, RulesConfig } from './types/rules';
 
@@ -233,11 +236,29 @@ export async function deleteFile(id: number): Promise<void> {
   await request<string>(`/api/files/${id}`, { method: 'DELETE' });
 }
 
-export async function createJournal(name: string): Promise<FileInfo> {
+export async function createJournal(
+  name: string,
+  settings: JournalSettings
+): Promise<FileInfo> {
   return request<FileInfo>('/api/journals', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name }),
+    body: JSON.stringify({ name, settings }),
+  });
+}
+
+export async function getJournalSettings(id: number): Promise<JournalSettingsDetail> {
+  return request<JournalSettingsDetail>(`/api/journals/${id}/settings`);
+}
+
+export async function updateJournalSettings(
+  id: number,
+  settings: JournalSettings
+): Promise<JournalSettingsDetail> {
+  return request<JournalSettingsDetail>(`/api/journals/${id}/settings`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ settings }),
   });
 }
 

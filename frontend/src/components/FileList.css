@@ -91,6 +91,15 @@
   border-color: var(--success);
 }
 
+.file-list-btn--settings {
+  color: var(--accent);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.file-list-btn--settings:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
 .file-list-btn--delete {
   color: var(--danger);
   border-color: rgba(248, 113, 113, 0.3);
