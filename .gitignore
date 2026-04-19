@@ -20,9 +20,12 @@ frontend/dist/
 .DS_Store
 Thumbs.db
 
-# Claude
+# AI tools
 CLAUDE.md
 .claude
+
+AGENTS.md
+.agents
 
 # plans
 plans/
