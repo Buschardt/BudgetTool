@@ -10,21 +10,24 @@ import { PostingRows } from './PostingRows';
 
 interface Props {
   editing: PeriodicTransactionSummary | null;
+  journalId: number;
+  accounts: string[];
   onSaved: (p: PeriodicTransactionSummary) => void;
   onCancel: () => void;
 }
 
-export function PeriodicForm({ editing, onSaved, onCancel }: Props) {
+export function PeriodicForm({ editing, journalId, accounts, onSaved, onCancel }: Props) {
   const isNew = editing === null;
   const [form, setForm] = useState<CreatePeriodicRequest>(
     editing
       ? {
+          journal_file_id: editing.journal_file_id,
           period: editing.period,
           description: editing.description,
           comment: editing.comment,
           postings: editing.postings,
         }
-      : { ...EMPTY_PERIODIC, postings: [...EMPTY_PERIODIC.postings] }
+      : { ...EMPTY_PERIODIC, journal_file_id: journalId, postings: [...EMPTY_PERIODIC.postings] }
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -39,9 +42,9 @@ export function PeriodicForm({ editing, onSaved, onCancel }: Props) {
     setError('');
     try {
       if (isNew) {
-        const result = await createPeriodic(form);
+        const result = await createPeriodic({ ...form, journal_file_id: journalId });
         onSaved(result);
-        setForm({ ...EMPTY_PERIODIC, postings: [...EMPTY_PERIODIC.postings] });
+        setForm({ ...EMPTY_PERIODIC, journal_file_id: journalId, postings: [...EMPTY_PERIODIC.postings] });
       } else {
         const data: UpdatePeriodicRequest = form;
         const result = await updatePeriodic(editing.id, data);
@@ -90,7 +93,11 @@ export function PeriodicForm({ editing, onSaved, onCancel }: Props) {
       </div>
       <div className="manual-form-field">
         <label>Postings</label>
-        <PostingRows postings={form.postings} onChange={postings => patch({ postings })} />
+        <PostingRows
+          postings={form.postings}
+          accounts={accounts}
+          onChange={postings => patch({ postings })}
+        />
       </div>
       {error && <p className="manual-form-error">{error}</p>}
       <div className="manual-form-actions">

@@ -4,6 +4,7 @@ use serde::Serialize;
 pub struct CommodityPriceRecord {
     pub id: i64,
     pub user_id: i64,
+    pub journal_file_id: i64,
     pub date: String,
     pub commodity: String,
     pub amount: String,
@@ -16,6 +17,7 @@ pub struct CommodityPriceRecord {
 #[derive(Debug, Serialize)]
 pub struct CommodityPriceInfo {
     pub id: i64,
+    pub journal_file_id: i64,
     pub date: String,
     pub commodity: String,
     pub amount: String,
@@ -29,6 +31,7 @@ impl From<CommodityPriceRecord> for CommodityPriceInfo {
     fn from(r: CommodityPriceRecord) -> Self {
         CommodityPriceInfo {
             id: r.id,
+            journal_file_id: r.journal_file_id,
             date: r.date,
             commodity: r.commodity,
             amount: r.amount,
@@ -44,6 +47,7 @@ impl From<CommodityPriceRecord> for CommodityPriceInfo {
 pub struct ManualTransactionRecord {
     pub id: i64,
     pub user_id: i64,
+    pub journal_file_id: i64,
     pub date: String,
     pub status: String,
     pub code: String,
@@ -57,6 +61,7 @@ pub struct ManualTransactionRecord {
 #[derive(Debug, Serialize)]
 pub struct ManualTransactionInfo {
     pub id: i64,
+    pub journal_file_id: i64,
     pub date: String,
     pub status: String,
     pub code: String,
@@ -73,6 +78,7 @@ impl From<ManualTransactionRecord> for ManualTransactionInfo {
             serde_json::from_str(&r.postings).unwrap_or(serde_json::Value::Array(vec![]));
         ManualTransactionInfo {
             id: r.id,
+            journal_file_id: r.journal_file_id,
             date: r.date,
             status: r.status,
             code: r.code,
@@ -89,6 +95,7 @@ impl From<ManualTransactionRecord> for ManualTransactionInfo {
 pub struct PeriodicTransactionRecord {
     pub id: i64,
     pub user_id: i64,
+    pub journal_file_id: i64,
     pub period: String,
     pub description: String,
     pub comment: String,
@@ -100,6 +107,7 @@ pub struct PeriodicTransactionRecord {
 #[derive(Debug, Serialize)]
 pub struct PeriodicTransactionInfo {
     pub id: i64,
+    pub journal_file_id: i64,
     pub period: String,
     pub description: String,
     pub comment: String,
@@ -114,6 +122,7 @@ impl From<PeriodicTransactionRecord> for PeriodicTransactionInfo {
             serde_json::from_str(&r.postings).unwrap_or(serde_json::Value::Array(vec![]));
         PeriodicTransactionInfo {
             id: r.id,
+            journal_file_id: r.journal_file_id,
             period: r.period,
             description: r.description,
             comment: r.comment,

@@ -5,11 +5,13 @@ import { TransactionForm } from './TransactionForm';
 
 interface Props {
   transactions: ManualTransactionSummary[];
+  journalId: number;
+  accounts: string[];
   onUpdated: (txn: ManualTransactionSummary) => void;
   onDeleted: (id: number) => void;
 }
 
-export function TransactionList({ transactions, onUpdated, onDeleted }: Props) {
+export function TransactionList({ transactions, journalId, accounts, onUpdated, onDeleted }: Props) {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [deleting, setDeleting] = useState<number | null>(null);
 
@@ -37,6 +39,8 @@ export function TransactionList({ transactions, onUpdated, onDeleted }: Props) {
           {editingId === t.id ? (
             <TransactionForm
               editing={t}
+              journalId={journalId}
+              accounts={accounts}
               onSaved={updated => {
                 onUpdated(updated);
                 setEditingId(null);

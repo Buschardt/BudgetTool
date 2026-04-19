@@ -1,4 +1,4 @@
-use uuid::Uuid;
+use std::path::Path;
 
 use crate::core::AppState;
 use crate::core::error::AppError;
@@ -7,28 +7,49 @@ use crate::manual_entries::models::{
     CommodityPriceRecord, ManualTransactionRecord, PeriodicTransactionRecord,
 };
 
-pub async fn regenerate_journal(state: &AppState, user_id: i64) -> Result<(), AppError> {
+pub fn sidecar_path_for(journal_disk_path: &str) -> String {
+    journal_disk_path
+        .strip_suffix(".journal")
+        .map(|base| format!("{base}.manual.journal"))
+        .unwrap_or_else(|| format!("{journal_disk_path}.manual.journal"))
+}
+
+pub async fn regenerate_journal_for(
+    state: &AppState,
+    journal_file_id: i64,
+) -> Result<(), AppError> {
+    let row: Option<(String,)> =
+        sqlx::query_as("SELECT disk_path FROM files WHERE id = ? AND file_type = 'journal'")
+            .bind(journal_file_id)
+            .fetch_optional(&state.db)
+            .await?;
+
+    let (journal_disk_path,) =
+        row.ok_or_else(|| AppError::NotFound(format!("journal {journal_file_id}")))?;
+
+    let sidecar = sidecar_path_for(&journal_disk_path);
+
     let price_records: Vec<CommodityPriceRecord> = sqlx::query_as(
-        "SELECT id, user_id, date, commodity, amount, target_commodity, comment, created_at, updated_at \
-         FROM commodity_prices WHERE user_id = ? ORDER BY date, id",
+        "SELECT id, user_id, journal_file_id, date, commodity, amount, target_commodity, comment, created_at, updated_at \
+         FROM commodity_prices WHERE journal_file_id = ? ORDER BY date, id",
     )
-    .bind(user_id)
+    .bind(journal_file_id)
     .fetch_all(&state.db)
     .await?;
 
     let txn_records: Vec<ManualTransactionRecord> = sqlx::query_as(
-        "SELECT id, user_id, date, status, code, description, comment, postings, created_at, updated_at \
-         FROM manual_transactions WHERE user_id = ? ORDER BY date, id",
+        "SELECT id, user_id, journal_file_id, date, status, code, description, comment, postings, created_at, updated_at \
+         FROM manual_transactions WHERE journal_file_id = ? ORDER BY date, id",
     )
-    .bind(user_id)
+    .bind(journal_file_id)
     .fetch_all(&state.db)
     .await?;
 
     let periodic_records: Vec<PeriodicTransactionRecord> = sqlx::query_as(
-        "SELECT id, user_id, period, description, comment, postings, created_at, updated_at \
-         FROM periodic_transactions WHERE user_id = ? ORDER BY id",
+        "SELECT id, user_id, journal_file_id, period, description, comment, postings, created_at, updated_at \
+         FROM periodic_transactions WHERE journal_file_id = ? ORDER BY id",
     )
-    .bind(user_id)
+    .bind(journal_file_id)
     .fetch_all(&state.db)
     .await?;
 
@@ -71,36 +92,15 @@ pub async fn regenerate_journal(state: &AppState, user_id: i64) -> Result<(), Ap
         })
         .collect();
 
+    if prices.is_empty() && transactions.is_empty() && periodics.is_empty() {
+        if Path::new(&sidecar).exists() {
+            tokio::fs::remove_file(&sidecar).await.ok();
+        }
+        return Ok(());
+    }
+
     let journal_text = generator::generate_journal_text(&prices, &transactions, &periodics)?;
-
-    let existing: Option<(String,)> =
-        sqlx::query_as("SELECT disk_path FROM manual_entry_journals WHERE user_id = ?")
-            .bind(user_id)
-            .fetch_optional(&state.db)
-            .await?;
-
-    let disk_path = if let Some((path,)) = existing {
-        path
-    } else {
-        let user_dir = state.data_dir.join(user_id.to_string());
-        tokio::fs::create_dir_all(&user_dir).await?;
-        let filename = format!("{}_manual-entries.journal", Uuid::new_v4());
-        let path = user_dir.join(&filename);
-        let path_str = path.to_string_lossy().into_owned();
-        sqlx::query("INSERT INTO manual_entry_journals (user_id, disk_path) VALUES (?, ?)")
-            .bind(user_id)
-            .bind(&path_str)
-            .execute(&state.db)
-            .await?;
-        path_str
-    };
-
-    tokio::fs::write(&disk_path, journal_text.as_bytes()).await?;
-
-    sqlx::query("UPDATE manual_entry_journals SET updated_at = datetime('now') WHERE user_id = ?")
-        .bind(user_id)
-        .execute(&state.db)
-        .await?;
+    tokio::fs::write(&sidecar, journal_text.as_bytes()).await?;
 
     Ok(())
 }

@@ -5,11 +5,13 @@ import { PeriodicForm } from './PeriodicForm';
 
 interface Props {
   periodics: PeriodicTransactionSummary[];
+  journalId: number;
+  accounts: string[];
   onUpdated: (p: PeriodicTransactionSummary) => void;
   onDeleted: (id: number) => void;
 }
 
-export function PeriodicList({ periodics, onUpdated, onDeleted }: Props) {
+export function PeriodicList({ periodics, journalId, accounts, onUpdated, onDeleted }: Props) {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [deleting, setDeleting] = useState<number | null>(null);
 
@@ -37,6 +39,8 @@ export function PeriodicList({ periodics, onUpdated, onDeleted }: Props) {
           {editingId === p.id ? (
             <PeriodicForm
               editing={p}
+              journalId={journalId}
+              accounts={accounts}
               onSaved={updated => {
                 onUpdated(updated);
                 setEditingId(null);

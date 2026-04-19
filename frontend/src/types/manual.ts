@@ -12,6 +12,7 @@ export interface Posting {
 
 export interface CommodityPriceSummary {
   id: number;
+  journal_file_id: number;
   date: string;
   commodity: string;
   amount: string;
@@ -22,6 +23,7 @@ export interface CommodityPriceSummary {
 }
 
 export interface CreatePriceRequest {
+  journal_file_id: number;
   date: string;
   commodity: string;
   amount: string;
@@ -38,6 +40,7 @@ export interface UpdatePriceRequest {
 }
 
 export const EMPTY_PRICE: CreatePriceRequest = {
+  journal_file_id: 0,
   date: '',
   commodity: '',
   amount: '',
@@ -49,6 +52,7 @@ export const EMPTY_PRICE: CreatePriceRequest = {
 
 export interface ManualTransactionSummary {
   id: number;
+  journal_file_id: number;
   date: string;
   status: string;
   code: string;
@@ -60,6 +64,7 @@ export interface ManualTransactionSummary {
 }
 
 export interface CreateTransactionRequest {
+  journal_file_id: number;
   date: string;
   status?: string;
   code?: string;
@@ -78,6 +83,7 @@ export interface UpdateTransactionRequest {
 }
 
 export const EMPTY_TRANSACTION: CreateTransactionRequest = {
+  journal_file_id: 0,
   date: '',
   status: '',
   code: '',
@@ -90,6 +96,7 @@ export const EMPTY_TRANSACTION: CreateTransactionRequest = {
 
 export interface PeriodicTransactionSummary {
   id: number;
+  journal_file_id: number;
   period: string;
   description: string;
   comment: string;
@@ -99,6 +106,7 @@ export interface PeriodicTransactionSummary {
 }
 
 export interface CreatePeriodicRequest {
+  journal_file_id: number;
   period: string;
   description?: string;
   comment?: string;
@@ -113,6 +121,7 @@ export interface UpdatePeriodicRequest {
 }
 
 export const EMPTY_PERIODIC: CreatePeriodicRequest = {
+  journal_file_id: 0,
   period: '',
   description: '',
   comment: '',

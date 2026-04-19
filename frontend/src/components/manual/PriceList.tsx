@@ -5,11 +5,12 @@ import { PriceForm } from './PriceForm';
 
 interface Props {
   prices: CommodityPriceSummary[];
+  journalId: number;
   onUpdated: (price: CommodityPriceSummary) => void;
   onDeleted: (id: number) => void;
 }
 
-export function PriceList({ prices, onUpdated, onDeleted }: Props) {
+export function PriceList({ prices, journalId, onUpdated, onDeleted }: Props) {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [deleting, setDeleting] = useState<number | null>(null);
 
@@ -37,6 +38,7 @@ export function PriceList({ prices, onUpdated, onDeleted }: Props) {
           {editingId === p.id ? (
             <PriceForm
               editing={p}
+              journalId={journalId}
               onSaved={updated => {
                 onUpdated(updated);
                 setEditingId(null);

@@ -1,5 +1,5 @@
 use axum::Json;
-use axum::extract::{Path, State};
+use axum::extract::{Path, Query, State};
 use serde::Deserialize;
 
 use crate::auth::Claims;
@@ -7,11 +7,17 @@ use crate::core::AppState;
 use crate::core::error::AppError;
 use crate::core::response::ApiResponse;
 use crate::manual_entries::generator::{self, PriceEntry};
-use crate::manual_entries::journal::regenerate_journal;
+use crate::manual_entries::journal::regenerate_journal_for;
 use crate::manual_entries::models::{CommodityPriceInfo, CommodityPriceRecord};
 
 #[derive(Deserialize)]
+pub struct ListQuery {
+    pub journal_file_id: Option<i64>,
+}
+
+#[derive(Deserialize)]
 pub struct CreatePriceRequest {
+    pub journal_file_id: i64,
     pub date: String,
     pub commodity: String,
     pub amount: String,
@@ -32,14 +38,26 @@ pub struct UpdatePriceRequest {
 pub async fn list(
     claims: Claims,
     State(state): State<AppState>,
+    Query(q): Query<ListQuery>,
 ) -> Result<Json<ApiResponse<Vec<CommodityPriceInfo>>>, AppError> {
-    let records: Vec<CommodityPriceRecord> = sqlx::query_as(
-        "SELECT id, user_id, date, commodity, amount, target_commodity, comment, created_at, updated_at \
-         FROM commodity_prices WHERE user_id = ? ORDER BY date DESC, id DESC",
-    )
-    .bind(claims.sub)
-    .fetch_all(&state.db)
-    .await?;
+    let records: Vec<CommodityPriceRecord> = if let Some(jid) = q.journal_file_id {
+        sqlx::query_as(
+            "SELECT id, user_id, journal_file_id, date, commodity, amount, target_commodity, comment, created_at, updated_at \
+             FROM commodity_prices WHERE user_id = ? AND journal_file_id = ? ORDER BY date DESC, id DESC",
+        )
+        .bind(claims.sub)
+        .bind(jid)
+        .fetch_all(&state.db)
+        .await?
+    } else {
+        sqlx::query_as(
+            "SELECT id, user_id, journal_file_id, date, commodity, amount, target_commodity, comment, created_at, updated_at \
+             FROM commodity_prices WHERE user_id = ? ORDER BY date DESC, id DESC",
+        )
+        .bind(claims.sub)
+        .fetch_all(&state.db)
+        .await?
+    };
 
     Ok(ApiResponse::success(
         records.into_iter().map(CommodityPriceInfo::from).collect(),
@@ -51,6 +69,15 @@ pub async fn create(
     State(state): State<AppState>,
     Json(body): Json<CreatePriceRequest>,
 ) -> Result<Json<ApiResponse<CommodityPriceInfo>>, AppError> {
+    let _: (i64,) = sqlx::query_as(
+        "SELECT id FROM files WHERE id = ? AND user_id = ? AND file_type = 'journal'",
+    )
+    .bind(body.journal_file_id)
+    .bind(claims.sub)
+    .fetch_optional(&state.db)
+    .await?
+    .ok_or_else(|| AppError::NotFound(format!("journal {}", body.journal_file_id)))?;
+
     let entry = PriceEntry {
         date: body.date.clone(),
         commodity: body.commodity.clone(),
@@ -61,11 +88,12 @@ pub async fn create(
     generator::validate_price(&entry)?;
 
     let record: CommodityPriceRecord = sqlx::query_as(
-        "INSERT INTO commodity_prices (user_id, date, commodity, amount, target_commodity, comment) \
-         VALUES (?, ?, ?, ?, ?, ?) \
-         RETURNING id, user_id, date, commodity, amount, target_commodity, comment, created_at, updated_at",
+        "INSERT INTO commodity_prices (user_id, journal_file_id, date, commodity, amount, target_commodity, comment) \
+         VALUES (?, ?, ?, ?, ?, ?, ?) \
+         RETURNING id, user_id, journal_file_id, date, commodity, amount, target_commodity, comment, created_at, updated_at",
     )
     .bind(claims.sub)
+    .bind(body.journal_file_id)
     .bind(&body.date)
     .bind(&body.commodity)
     .bind(&body.amount)
@@ -74,7 +102,7 @@ pub async fn create(
     .fetch_one(&state.db)
     .await?;
 
-    regenerate_journal(&state, claims.sub).await?;
+    regenerate_journal_for(&state, body.journal_file_id).await?;
 
     Ok(ApiResponse::success(CommodityPriceInfo::from(record)))
 }
@@ -86,7 +114,7 @@ pub async fn update(
     Json(body): Json<UpdatePriceRequest>,
 ) -> Result<Json<ApiResponse<CommodityPriceInfo>>, AppError> {
     let existing: Option<CommodityPriceRecord> = sqlx::query_as(
-        "SELECT id, user_id, date, commodity, amount, target_commodity, comment, created_at, updated_at \
+        "SELECT id, user_id, journal_file_id, date, commodity, amount, target_commodity, comment, created_at, updated_at \
          FROM commodity_prices WHERE id = ? AND user_id = ?",
     )
     .bind(id)
@@ -126,14 +154,14 @@ pub async fn update(
     .await?;
 
     let updated: CommodityPriceRecord = sqlx::query_as(
-        "SELECT id, user_id, date, commodity, amount, target_commodity, comment, created_at, updated_at \
+        "SELECT id, user_id, journal_file_id, date, commodity, amount, target_commodity, comment, created_at, updated_at \
          FROM commodity_prices WHERE id = ?",
     )
     .bind(id)
     .fetch_one(&state.db)
     .await?;
 
-    regenerate_journal(&state, claims.sub).await?;
+    regenerate_journal_for(&state, existing.journal_file_id).await?;
 
     Ok(ApiResponse::success(CommodityPriceInfo::from(updated)))
 }
@@ -143,21 +171,22 @@ pub async fn delete(
     State(state): State<AppState>,
     Path(id): Path<i64>,
 ) -> Result<Json<ApiResponse<&'static str>>, AppError> {
-    let existing: Option<(i64,)> =
-        sqlx::query_as("SELECT id FROM commodity_prices WHERE id = ? AND user_id = ?")
-            .bind(id)
-            .bind(claims.sub)
-            .fetch_optional(&state.db)
-            .await?;
+    let existing: Option<(i64, i64)> = sqlx::query_as(
+        "SELECT id, journal_file_id FROM commodity_prices WHERE id = ? AND user_id = ?",
+    )
+    .bind(id)
+    .bind(claims.sub)
+    .fetch_optional(&state.db)
+    .await?;
 
-    existing.ok_or_else(|| AppError::NotFound(format!("price {id}")))?;
+    let (_, journal_file_id) = existing.ok_or_else(|| AppError::NotFound(format!("price {id}")))?;
 
     sqlx::query("DELETE FROM commodity_prices WHERE id = ?")
         .bind(id)
         .execute(&state.db)
         .await?;
 
-    regenerate_journal(&state, claims.sub).await?;
+    regenerate_journal_for(&state, journal_file_id).await?;
 
     Ok(ApiResponse::success("deleted"))
 }

@@ -84,8 +84,9 @@ import type {
 
 // --- Prices ---
 
-export async function listPrices(): Promise<CommodityPriceSummary[]> {
-  return request<CommodityPriceSummary[]>('/api/prices');
+export async function listPrices(journalId?: number): Promise<CommodityPriceSummary[]> {
+  const qs = journalId != null ? `?journal_file_id=${journalId}` : '';
+  return request<CommodityPriceSummary[]>(`/api/prices${qs}`);
 }
 
 export async function createPrice(data: CreatePriceRequest): Promise<CommodityPriceSummary> {
@@ -113,8 +114,9 @@ export async function deletePrice(id: number): Promise<void> {
 
 // --- Manual transactions ---
 
-export async function listTransactions(): Promise<ManualTransactionSummary[]> {
-  return request<ManualTransactionSummary[]>('/api/transactions');
+export async function listTransactions(journalId?: number): Promise<ManualTransactionSummary[]> {
+  const qs = journalId != null ? `?journal_file_id=${journalId}` : '';
+  return request<ManualTransactionSummary[]>(`/api/transactions${qs}`);
 }
 
 export async function createTransaction(
@@ -144,8 +146,9 @@ export async function deleteTransaction(id: number): Promise<void> {
 
 // --- Periodic transactions ---
 
-export async function listPeriodics(): Promise<PeriodicTransactionSummary[]> {
-  return request<PeriodicTransactionSummary[]>('/api/periodics');
+export async function listPeriodics(journalId?: number): Promise<PeriodicTransactionSummary[]> {
+  const qs = journalId != null ? `?journal_file_id=${journalId}` : '';
+  return request<PeriodicTransactionSummary[]>(`/api/periodics${qs}`);
 }
 
 export async function createPeriodic(

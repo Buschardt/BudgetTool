@@ -5,22 +5,24 @@ import { createPrice, updatePrice } from '../../api';
 
 interface Props {
   editing: CommodityPriceSummary | null;
+  journalId: number;
   onSaved: (price: CommodityPriceSummary) => void;
   onCancel: () => void;
 }
 
-export function PriceForm({ editing, onSaved, onCancel }: Props) {
+export function PriceForm({ editing, journalId, onSaved, onCancel }: Props) {
   const isNew = editing === null;
   const [form, setForm] = useState<CreatePriceRequest>(
     editing
       ? {
+          journal_file_id: editing.journal_file_id,
           date: editing.date,
           commodity: editing.commodity,
           amount: editing.amount,
           target_commodity: editing.target_commodity,
           comment: editing.comment,
         }
-      : { ...EMPTY_PRICE }
+      : { ...EMPTY_PRICE, journal_file_id: journalId }
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -35,8 +37,9 @@ export function PriceForm({ editing, onSaved, onCancel }: Props) {
     setError('');
     try {
       if (isNew) {
-        const result = await createPrice(form);
+        const result = await createPrice({ ...form, journal_file_id: journalId });
         onSaved(result);
+        setForm({ ...EMPTY_PRICE, journal_file_id: journalId });
       } else {
         const data: UpdatePriceRequest = form;
         const result = await updatePrice(editing.id, data);

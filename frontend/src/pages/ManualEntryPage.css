@@ -16,6 +16,36 @@
   font-size: 0.9rem;
 }
 
+/* Journal selector bar */
+.manual-journal-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.25rem;
+}
+
+.manual-journal-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.manual-journal-select {
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  background: var(--surface-alt);
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.manual-journal-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
 /* Tabs */
 .manual-tabs {
   display: flex;

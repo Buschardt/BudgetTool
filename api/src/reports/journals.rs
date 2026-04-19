@@ -1,37 +1,33 @@
+use std::path::Path;
+
 use sqlx::sqlite::SqlitePool;
 
 use crate::core::error::AppError;
+use crate::manual_entries::journal::sidecar_path_for;
 
-/// Fetch all journal file paths for the user from the database.
-/// Includes uploaded journals and the user's managed manual-entries journal if it exists.
-/// Returns an error only if the user has no journal data at all.
+/// Fetch all journal file paths for the user, including any manual-entry sidecars that exist on disk.
 pub async fn journal_args(db: &SqlitePool, user_id: i64) -> Result<Vec<String>, AppError> {
-    let uploaded: Vec<(String,)> =
+    let journals: Vec<(String,)> =
         sqlx::query_as("SELECT disk_path FROM files WHERE user_id = ? AND file_type = 'journal'")
             .bind(user_id)
             .fetch_all(db)
             .await?;
 
-    let manual: Option<(String,)> =
-        sqlx::query_as("SELECT disk_path FROM manual_entry_journals WHERE user_id = ?")
-            .bind(user_id)
-            .fetch_optional(db)
-            .await?;
-
-    if uploaded.is_empty() && manual.is_none() {
+    if journals.is_empty() {
         return Err(AppError::BadRequest(
-            "no journal data yet; upload a .journal file or add manual entries first".into(),
+            "no journal data yet; upload or create a .journal file first".into(),
         ));
     }
 
-    let mut args = Vec::with_capacity((uploaded.len() + 1) * 2);
-    for (path,) in uploaded {
+    let mut args = Vec::with_capacity(journals.len() * 4);
+    for (path,) in journals {
         args.push("-f".to_string());
-        args.push(path);
-    }
-    if let Some((path,)) = manual {
-        args.push("-f".to_string());
-        args.push(path);
+        args.push(path.clone());
+        let sidecar = sidecar_path_for(&path);
+        if Path::new(&sidecar).exists() {
+            args.push("-f".to_string());
+            args.push(sidecar);
+        }
     }
     Ok(args)
 }

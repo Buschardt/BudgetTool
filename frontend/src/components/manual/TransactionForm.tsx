@@ -10,15 +10,18 @@ import { PostingRows } from './PostingRows';
 
 interface Props {
   editing: ManualTransactionSummary | null;
+  journalId: number;
+  accounts: string[];
   onSaved: (txn: ManualTransactionSummary) => void;
   onCancel: () => void;
 }
 
-export function TransactionForm({ editing, onSaved, onCancel }: Props) {
+export function TransactionForm({ editing, journalId, accounts, onSaved, onCancel }: Props) {
   const isNew = editing === null;
   const [form, setForm] = useState<CreateTransactionRequest>(
     editing
       ? {
+          journal_file_id: editing.journal_file_id,
           date: editing.date,
           status: editing.status,
           code: editing.code,
@@ -26,7 +29,7 @@ export function TransactionForm({ editing, onSaved, onCancel }: Props) {
           comment: editing.comment,
           postings: editing.postings,
         }
-      : { ...EMPTY_TRANSACTION, postings: [...EMPTY_TRANSACTION.postings] }
+      : { ...EMPTY_TRANSACTION, journal_file_id: journalId, postings: [...EMPTY_TRANSACTION.postings] }
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -41,9 +44,9 @@ export function TransactionForm({ editing, onSaved, onCancel }: Props) {
     setError('');
     try {
       if (isNew) {
-        const result = await createTransaction(form);
+        const result = await createTransaction({ ...form, journal_file_id: journalId });
         onSaved(result);
-        setForm({ ...EMPTY_TRANSACTION, postings: [...EMPTY_TRANSACTION.postings] });
+        setForm({ ...EMPTY_TRANSACTION, journal_file_id: journalId, postings: [...EMPTY_TRANSACTION.postings] });
       } else {
         const data: UpdateTransactionRequest = form;
         const result = await updateTransaction(editing.id, data);
@@ -109,7 +112,11 @@ export function TransactionForm({ editing, onSaved, onCancel }: Props) {
       </div>
       <div className="manual-form-field">
         <label>Postings</label>
-        <PostingRows postings={form.postings} onChange={postings => patch({ postings })} />
+        <PostingRows
+          postings={form.postings}
+          accounts={accounts}
+          onChange={postings => patch({ postings })}
+        />
       </div>
       {error && <p className="manual-form-error">{error}</p>}
       <div className="manual-form-actions">
