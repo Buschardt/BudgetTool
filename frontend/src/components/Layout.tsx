@@ -10,6 +10,7 @@ const NAV_LINKS = [
   { to: '/register', label: 'Register', end: false },
   { to: '/cashflow', label: 'Cash Flow', end: false },
   { to: '/rules', label: 'Rules', end: false },
+  { to: '/manual-entry', label: 'Manual Entry', end: false },
   { to: '/files', label: 'Files', end: false },
 ];
 

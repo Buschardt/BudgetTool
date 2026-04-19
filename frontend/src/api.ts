@@ -55,6 +55,121 @@ export async function previewRulesConfig(
   });
 }
 
+export type {
+  CommodityPriceSummary,
+  ManualTransactionSummary,
+  PeriodicTransactionSummary,
+  CreatePriceRequest,
+  UpdatePriceRequest,
+  CreateTransactionRequest,
+  UpdateTransactionRequest,
+  CreatePeriodicRequest,
+  UpdatePeriodicRequest,
+  Posting,
+} from './types/manual';
+import type {
+  CommodityPriceSummary,
+  ManualTransactionSummary,
+  PeriodicTransactionSummary,
+  CreatePriceRequest,
+  UpdatePriceRequest,
+  CreateTransactionRequest,
+  UpdateTransactionRequest,
+  CreatePeriodicRequest,
+  UpdatePeriodicRequest,
+} from './types/manual';
+
+// --- Prices ---
+
+export async function listPrices(): Promise<CommodityPriceSummary[]> {
+  return request<CommodityPriceSummary[]>('/api/prices');
+}
+
+export async function createPrice(data: CreatePriceRequest): Promise<CommodityPriceSummary> {
+  return request<CommodityPriceSummary>('/api/prices', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updatePrice(
+  id: number,
+  data: UpdatePriceRequest
+): Promise<CommodityPriceSummary> {
+  return request<CommodityPriceSummary>(`/api/prices/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deletePrice(id: number): Promise<void> {
+  await request<string>(`/api/prices/${id}`, { method: 'DELETE' });
+}
+
+// --- Manual transactions ---
+
+export async function listTransactions(): Promise<ManualTransactionSummary[]> {
+  return request<ManualTransactionSummary[]>('/api/transactions');
+}
+
+export async function createTransaction(
+  data: CreateTransactionRequest
+): Promise<ManualTransactionSummary> {
+  return request<ManualTransactionSummary>('/api/transactions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateTransaction(
+  id: number,
+  data: UpdateTransactionRequest
+): Promise<ManualTransactionSummary> {
+  return request<ManualTransactionSummary>(`/api/transactions/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteTransaction(id: number): Promise<void> {
+  await request<string>(`/api/transactions/${id}`, { method: 'DELETE' });
+}
+
+// --- Periodic transactions ---
+
+export async function listPeriodics(): Promise<PeriodicTransactionSummary[]> {
+  return request<PeriodicTransactionSummary[]>('/api/periodics');
+}
+
+export async function createPeriodic(
+  data: CreatePeriodicRequest
+): Promise<PeriodicTransactionSummary> {
+  return request<PeriodicTransactionSummary>('/api/periodics', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updatePeriodic(
+  id: number,
+  data: UpdatePeriodicRequest
+): Promise<PeriodicTransactionSummary> {
+  return request<PeriodicTransactionSummary>(`/api/periodics/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deletePeriodic(id: number): Promise<void> {
+  await request<string>(`/api/periodics/${id}`, { method: 'DELETE' });
+}
+
 export interface ReportParams {
   begin?: string;
   end?: string;

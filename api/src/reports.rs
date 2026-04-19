@@ -18,23 +18,35 @@ pub struct ReportQuery {
 }
 
 /// Fetch all journal file paths for the user from the database.
-/// Returns an error if the user has no journal files uploaded.
+/// Includes uploaded journals and the user's managed manual-entries journal if it exists.
+/// Returns an error only if the user has no journal data at all.
 async fn journal_args(db: &SqlitePool, user_id: i64) -> Result<Vec<String>, AppError> {
-    let rows: Vec<(String,)> =
+    let uploaded: Vec<(String,)> =
         sqlx::query_as("SELECT disk_path FROM files WHERE user_id = ? AND file_type = 'journal'")
             .bind(user_id)
             .fetch_all(db)
             .await
             .map_err(|e| AppError::Internal(format!("db: {e}")))?;
 
-    if rows.is_empty() {
+    let manual: Option<(String,)> =
+        sqlx::query_as("SELECT disk_path FROM manual_entry_journals WHERE user_id = ?")
+            .bind(user_id)
+            .fetch_optional(db)
+            .await
+            .map_err(|e| AppError::Internal(format!("db manual journal: {e}")))?;
+
+    if uploaded.is_empty() && manual.is_none() {
         return Err(AppError::BadRequest(
-            "no journal files uploaded; upload a .journal file first".into(),
+            "no journal data yet; upload a .journal file or add manual entries first".into(),
         ));
     }
 
-    let mut args = Vec::with_capacity(rows.len() * 2);
-    for (path,) in rows {
+    let mut args = Vec::with_capacity((uploaded.len() + 1) * 2);
+    for (path,) in uploaded {
+        args.push("-f".to_string());
+        args.push(path);
+    }
+    if let Some((path,)) = manual {
         args.push("-f".to_string());
         args.push(path);
     }

@@ -11,6 +11,7 @@ import { IncomePage } from './pages/IncomePage';
 import { RegisterPage } from './pages/RegisterPage';
 import { CashflowPage } from './pages/CashflowPage';
 import { FilesPage } from './pages/FilesPage';
+import { ManualEntryPage } from './pages/ManualEntryPage';
 import { RulesPage } from './pages/RulesPage';
 import { RulesEditorPage } from './pages/RulesEditorPage';
 import './index.css';
@@ -29,6 +30,7 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/cashflow" element={<CashflowPage />} />
               <Route path="/files" element={<FilesPage />} />
+              <Route path="/manual-entry" element={<ManualEntryPage />} />
               <Route path="/rules" element={<RulesPage />} />
               <Route path="/rules/new" element={<RulesEditorPage />} />
               <Route path="/rules/:id" element={<RulesEditorPage />} />
